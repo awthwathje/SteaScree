@@ -18,7 +18,7 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-VERSION = 1.0.1.0
+VERSION = 1.0.2.0
 
 win32:RC_ICONS = res/icons/SteaScree.ico
 win32:QMAKE_TARGET_COMPANY = Foyl

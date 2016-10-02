@@ -554,8 +554,8 @@ void MainWindow::pushScreenshots()
                 lines.insert(closing++, "\t\t{");
                 lines.insert(closing++, "\t\t\t\"type\"\t\t\"1\"");
                 lines.insert(closing++, "\t\t\t\"filename\"\t\t\"" + selectedGameID + "/screenshots/" + filename + "_1.jpg\"");
-                lines.insert(closing++, "\t\t\t\"thumbnail\"\t\t\"0\"");
-                lines.insert(closing++, "\t\t\t\"vrfilename\"\t\t\"0\"");
+                lines.insert(closing++, "\t\t\t\"thumbnail\"\t\t\"" + selectedGameID + "/screenshots/thumbnails/" + filename + "_1.jpg\"");
+                lines.insert(closing++, "\t\t\t\"vrfilename\"\t\t\"\"");
                 lines.insert(closing++, "\t\t\t\"imported\"\t\t\"0\"");
                 lines.insert(closing++, "\t\t\t\"width\"\t\t\"" + QString::number(width) + "\"");
                 lines.insert(closing++, "\t\t\t\"heigth\"\t\t\"" + QString::number(heigth) + "\"");
