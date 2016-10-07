@@ -41,11 +41,16 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QList<QPushButton*> buttonList; // list of buttons for setting a different padding for each OS
+    buttonList << ui->pushButtonClearQueue << ui->pushButtonCopyScreenshots << ui->pushButtonAddScreenshots << ui->pushButtonPrepare;
+
     if ( (os == "Linux") | (os == "macOS") ) {
         isUnixLikeOS = true;
         if ( os == "Linux" ) {
             settings = new QSettings(QSettings::NativeFormat, QSettings::UserScope, "Foyl", "SteaScree");
             defaultSteamDir = QDir::homePath() + "/.steam/steam";
+            foreach (QPushButton *button, buttonList)
+                button->setStyleSheet("padding: 3px 13px");
         } else {
             settings = new QSettings(QSettings::NativeFormat, QSettings::UserScope, "foyl.io", "SteaScree");
             defaultSteamDir = QDir::homePath() + "/Library/Application Support/Steam";
@@ -57,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
             defaultSteamDir = "C:/Program Files (x86)/Steam";
         else
             defaultSteamDir = "C:/Program Files/Steam";
+        foreach (QPushButton *button, buttonList)
+            button->setStyleSheet("padding: 4px 14px");
     };
 
     ui->progressBarScreenshotsUploading->setVisible(false); // initial widget states setting
@@ -69,9 +76,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelInfoScreenshots->setSizePolicy(sp_retain);
     ui->progressBarScreenshotsUploading->setSizePolicy(sp_retain);
 
-    toggleLabelInfo(false);
+    toggleLabelInfo(false); // information labels are hidden at start
 
-    readSettings();
+    readSettings(); // read settings from the file, if any
 
     if ( !screenshotPathsPool.isEmpty() ) {
         populateScreenshotQueue(screenshotPathsPool);
@@ -84,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
         setUserDataPaths(steamDir);
     };
 
-    QObject::connect(this, &MainWindow::vdfIsMissing,
+    QObject::connect(this, &MainWindow::vdfIsMissing, // if vdf file isn't found in last/default location, warning message box appears
                      this, &MainWindow::warnOnMissingVDF);
 }
 
@@ -158,7 +165,7 @@ void MainWindow::writeSettings()
     if ( !ui->comboBoxUserID->currentText().isEmpty() )
         settings->setValue("UserID", ui->comboBoxUserID->currentText());
     if ( !ui->comboBoxGameID->currentText().isEmpty() )
-        settings->setValue("GameID", ui->comboBoxGameID->currentText().remove(QRegularExpression(" <.+>$")));
+        settings->setValue("GameID", ui->comboBoxGameID->currentText().remove(QRegularExpression(" <.+>$"))); // sanitize game ID before saving to settings file
     settings->endGroup();
 
     settings->beginGroup("Screenshots");
@@ -167,7 +174,7 @@ void MainWindow::writeSettings()
 }
 
 
-void MainWindow::toggleLabelInfo(bool isVisible)
+void MainWindow::toggleLabelInfo(bool isVisible) // info lables show/hide toggle
 {
     QList<QLabel*> labelInfoList;
     labelInfoList << ui->labelInfoScreenshots << ui->labelInfo1 << ui->labelInfo2 << ui->labelInfoDirectories;
@@ -176,7 +183,7 @@ void MainWindow::toggleLabelInfo(bool isVisible)
 }
 
 
-void MainWindow::populateScreenshotQueue(QStringList screenshotPathsList)
+void MainWindow::populateScreenshotQueue(QStringList screenshotPathsList) // function to populate screenshot list with visible entries
 {
     if ( !screenshotPathsList.isEmpty() ) {
 
@@ -196,18 +203,18 @@ void MainWindow::populateScreenshotQueue(QStringList screenshotPathsList)
                 screenshotPathsPool.removeOne(current);
         };
 
-        ui->treeWidgetScreenshotList->resizeColumnToContents(0);
+        ui->treeWidgetScreenshotList->resizeColumnToContents(0); // after all has been added, resize columns for a better appearance
         ui->treeWidgetScreenshotList->resizeColumnToContents(1);
 
     };
 }
 
 
-void MainWindow::setUserDataPaths(QString dir)
+void MainWindow::setUserDataPaths(QString dir) // function to validate and set data paths and IDs
 {
     QStringList userIDsCombined;
 
-    vdfPaths.clear();
+    vdfPaths.clear(); // there may be multiple Steam installations in the system and thus multiple VDFs
     userID.clear();
     someID.clear();
     gameIDs.clear();
@@ -216,7 +223,7 @@ void MainWindow::setUserDataPaths(QString dir)
     ui->comboBoxGameID->clear();
     ui->labelStatusError->clear();
 
-    QList<QWidget*> widgetList;
+    QList<QWidget*> widgetList; // list of widgets for easier disabling/enabling
     widgetList << ui->labelUserID << ui->comboBoxUserID << ui->labelGameID << ui->comboBoxGameID
                << ui->groupBoxScreenshotQueue;
 
@@ -231,10 +238,10 @@ void MainWindow::setUserDataPaths(QString dir)
         };
 
         if ( !vdfPaths.isEmpty() ) {
-            ui->labelUserID->setDisabled(false);
-            ui->comboBoxUserID->setDisabled(false);
-            ui->labelGameID->setDisabled(false);
-            ui->comboBoxGameID->setDisabled(false);
+
+            foreach (QWidget *widget, widgetList)
+                widget->setDisabled(false);
+
             ui->groupBoxScreenshotQueue->setDisabled(false);
             ui->treeWidgetScreenshotList->setDisabled(false);
             ui->labelSteamDirValue->setText(convertSlashes(dir));
@@ -325,7 +332,7 @@ void MainWindow::getGameNames(QNetworkReply *reply)
 
         selectedUserID = ui->comboBoxUserID->currentText();
         QStringList lines = readVDF();
-        int shortcutNamesHeaderPos = lines.indexOf("\t\"shortcutnames\"");
+        int shortcutNamesHeaderPos = lines.indexOf("\t\"shortcutnames\""); // if there are any non-Steam games, get names for them too, from the VDF
         int shortcutNamesEndPos = lines.indexOf("\t}", shortcutNamesHeaderPos);
         QStringList shortcutNamesSection = lines.mid(shortcutNamesHeaderPos, shortcutNamesEndPos - shortcutNamesHeaderPos);
         QRegularExpression re("^\t\t\"[0-9]+\"\t\t\".+\"$");
@@ -371,7 +378,7 @@ void MainWindow::getGameNames(QNetworkReply *reply)
 }
 
 
-QString MainWindow::convertSlashes(QString str)
+QString MainWindow::convertSlashes(QString str) //
 {
     QString converted;
 
@@ -384,7 +391,7 @@ QString MainWindow::convertSlashes(QString str)
 }
 
 
-QStringList MainWindow::readVDF()
+QStringList MainWindow::readVDF() // read text from the VDF and return it in the form of list of strings for easy manipulating
 {
     QFile vdf(userDataDir + "/" + selectedUserID + "/" + vdfFilename);
     vdf.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -401,7 +408,7 @@ QStringList MainWindow::readVDF()
 }
 
 
-void MainWindow::writeVDF(QStringList lines)
+void MainWindow::writeVDF(QStringList lines) // write to VDF from list of strings. previous contents are discarded
 {
     QFile vdf(userDataDir + "/" + selectedUserID + "/" + vdfFilename);
     vdf.open(QIODevice::WriteOnly | QIODevice::Truncate);
@@ -417,12 +424,13 @@ void MainWindow::writeVDF(QStringList lines)
 }
 
 
-void MainWindow::pushScreenshots()
+void MainWindow::pushScreenshots() // this routine copies screenshots to the respective folders and manipulates a string list copy of the VDF. VDF is not written
 {
-    if ( !QDir(userDataDir + "/" + selectedUserID + "/remote/" + selectedGameID + "/screenshots/thumbnails").exists() )
-        QDir().mkpath(userDataDir + "/" + selectedUserID + "/remote/" + selectedGameID + "/screenshots/thumbnails");
+    QString path = userDataDir + "/" + selectedUserID + "/remote/" + selectedGameID + "/screenshots/thumbnails";
+    if ( !QDir().exists(path) )
+        QDir().mkpath(path);
 
-    QRegularExpression re("^\t\"" + selectedGameID + "\"$");
+    QRegularExpression re("^\t\"" + selectedGameID + "\"$"); // calculate a location for inserting new screenshot metadata
     int header = lines.indexOf(re, 0);
 
     int opening, closing;
@@ -452,7 +460,7 @@ void MainWindow::pushScreenshots()
                     unorderedHeaders = true;
             };
 
-            if ( !unorderedHeaders ) {
+            if ( !unorderedHeaders ) { // proceed only if all headers in the VDF are ordered, e.g. game ID 1000 is before 2000
                 QListIterator<int> i(headers);
                 while ( i.hasNext() ) {
                     int current = i.next();
@@ -509,23 +517,59 @@ void MainWindow::pushScreenshots()
 
             nothingAddedToVDF = true;
 
-            QListIterator<QString> i(screenshotPathsPool);
+            // routine to detect timestamp overlapping
+            QMap<QString, int> repeatingTimestamps;
+            QList<QStringList> screenshotPool;
+            {
+                QListIterator<QString> i(screenshotPathsPool);
+                while ( i.hasNext() ) {
+
+                    QString path = i.next();
+                    QString timestamp = QFileInfo(QFile(path)).lastModified().toString("yyyyMMddhhmmss");
+                    QString filename;
+                    int inc = 1;
+
+                    for ( int j = screenshotPathsPool.indexOf(path); j < screenshotPathsPool.length(); ++j ) {
+
+                        QString comparedTimestamp = QFileInfo(QFile(screenshotPathsPool[j])).lastModified().toString("yyyyMMddhhmmss");
+
+                        if ( timestamp == comparedTimestamp ) {
+
+
+                            if ( !repeatingTimestamps.contains(timestamp) )
+                                repeatingTimestamps[timestamp] = 0;
+                            else
+                                ++repeatingTimestamps[timestamp]; // if timestamp is non-unique for this set, increment the int in the end of a filename
+
+                            inc = repeatingTimestamps[timestamp] + 1;
+
+                            break;
+                        };
+                    };
+
+                    filename = timestamp + "_" + QString::number(inc) + ".jpg";
+                    screenshotPool << ( QStringList() << path << filename );
+                };
+            }
+
+            QListIterator<QStringList> i(screenshotPool); // when insertion location is determined, proceed to the insertion and file conversion/copying
             while ( i.hasNext() ) {
 
-                QString current = i.next();
+                QStringList current = i.next();
+                QString path = current[0];
+                QString filename = current[1];
 
                 // files
-                QImage screenshot(current);
-                QFile file(current);
-                QString extension = current.section('.', -1).toLower();
-                QString filename = QFileInfo(file).lastModified().toString("yyyyMMddhhmmss");
+                QImage screenshot(path);
+                QFile file(path);
+                QString extension = path.section('.', -1).toLower();
 
                 if ( !(QFile(copyDest + filename + "_1.jpg").exists()) ) {
 
                     if ( (extension == "jpg") | (extension == "jpeg") )
-                        file.copy(copyDest + filename + "_1.jpg");
+                        file.copy(copyDest + filename);
                     else
-                        screenshot.save(copyDest + filename + "_1.jpg", "jpg", 95);
+                        screenshot.save(copyDest + filename, "jpg", 95);
 
                     ui->labelInfoScreenshots->setText(QString::number(++copiedScreenshotsNum));
 
@@ -539,7 +583,7 @@ void MainWindow::pushScreenshots()
                 int tnHeigth = (tnWidth * heigth) / width;
 
                 screenshot.scaled(QSize(tnWidth, tnHeigth), Qt::IgnoreAspectRatio).save(copyDest + "/thumbnails/" +
-                                                                                        filename + "_1.jpg", "jpg", 95);
+                                                                                        filename, "jpg", 95);
                 QDateTime lm = QFileInfo(file).lastModified();
                 qint64 epoch = lm.toMSecsSinceEpoch();
                 QString creation = QString::number(epoch/1000);
@@ -547,14 +591,14 @@ void MainWindow::pushScreenshots()
 
                 // vdf
                 if ( lines.mid(opening, closing - opening )
-                     .contains("\t\t\t\"filename\"\t\t\"" + selectedGameID + "/screenshots/" + filename + "_1.jpg\"") )
+                     .contains("\t\t\t\"filename\"\t\t\"" + selectedGameID + "/screenshots/" + filename + "\"") )
                     continue;
 
                 lines.insert(closing++, "\t\t\"" + QString::number(++lastEntryValue) + "\"");
                 lines.insert(closing++, "\t\t{");
                 lines.insert(closing++, "\t\t\t\"type\"\t\t\"1\"");
-                lines.insert(closing++, "\t\t\t\"filename\"\t\t\"" + selectedGameID + "/screenshots/" + filename + "_1.jpg\"");
-                lines.insert(closing++, "\t\t\t\"thumbnail\"\t\t\"" + selectedGameID + "/screenshots/thumbnails/" + filename + "_1.jpg\"");
+                lines.insert(closing++, "\t\t\t\"filename\"\t\t\"" + selectedGameID + "/screenshots/" + filename + "\"");
+                lines.insert(closing++, "\t\t\t\"thumbnail\"\t\t\"" + selectedGameID + "/screenshots/thumbnails/" + filename + "\"");
                 lines.insert(closing++, "\t\t\t\"vrfilename\"\t\t\"\"");
                 lines.insert(closing++, "\t\t\t\"imported\"\t\t\"0\"");
                 lines.insert(closing++, "\t\t\t\"width\"\t\t\"" + QString::number(width) + "\"");
@@ -566,7 +610,7 @@ void MainWindow::pushScreenshots()
                 lines.insert(closing++, "\t\t\t\"hscreenshot\"\t\t\"\"");
                 lines.insert(closing++, "\t\t}");
 
-                ui->progressBarScreenshotsUploading->setValue(screenshotPathsPool.indexOf(current));
+                ui->progressBarScreenshotsUploading->setValue(screenshotPathsPool.indexOf(path));
 
                 QTreeWidgetItem *item = ui->treeWidgetScreenshotList->findItems(QFileInfo(file).lastModified()
                                                                                 .toString("yyyy/MM/dd hh:mm:ss"), Qt::MatchExactly, 1)[0];
@@ -611,7 +655,7 @@ void MainWindow::on_pushButtonAddScreenshots_clicked()
     while ( i.hasNext() ) {
         QString current = i.next();
         if ( screenshotPathsPool.contains(current) )
-            screenshotsSelected.removeOne(current);
+            screenshotsSelected.removeOne(current); // copies are removed from the list
     };
 
     if ( !screenshotsSelected.isEmpty() ) {
@@ -657,7 +701,7 @@ void MainWindow::on_pushButtonCopyScreenshots_clicked()
 
         ui->labelStatusError->clear();
 
-        selectedGameID = selectedGameID.remove(QRegularExpression(" <.+>$"));
+        selectedGameID = selectedGameID.remove(QRegularExpression(" <.+>$")); // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
 
         if ( screenshotPathsPool.length() >= 10 ) {
 
@@ -670,7 +714,6 @@ void MainWindow::on_pushButtonCopyScreenshots_clicked()
         ui->pushButtonClearQueue->setDisabled(true);
         ui->pushButtonAddScreenshots->setDisabled(true);
         ui->pushButtonCopyScreenshots->setDisabled(true);
-
 
         toggleLabelInfo(true);
 
@@ -723,7 +766,7 @@ void MainWindow::on_pushButtonPrepare_clicked()
             ui->pushButtonPrepare->setDisabled(true);
 
             QString vdfPath = userDataDir + "/" + selectedUserID + "/" + vdfFilename;
-            QFile(vdfPath).copy(vdfPath + ".bak");
+            QFile(vdfPath).copy(vdfPath + ".bak"); // backup VDF just in case
 
             writeVDF(lines);
 

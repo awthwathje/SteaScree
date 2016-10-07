@@ -56,16 +56,13 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="styleSheet">
-                <string notr="true">padding: 4px 14px</string>
-               </property>
                <property name="text">
                 <string>Clear queue</string>
                </property>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_4">
+              <spacer name="horizontalSpacer_11">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -88,16 +85,13 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="styleSheet">
-                <string notr="true">padding: 4px 14px</string>
-               </property>
                <property name="text">
                 <string>Copy screenshots to game directory</string>
                </property>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_3">
+              <spacer name="horizontalSpacer_10">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -119,9 +113,6 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">padding: 4px 14px</string>
                </property>
                <property name="text">
                 <string>Add screenshots to queue...</string>
@@ -192,7 +183,7 @@
       <item row="11" column="2" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayoutPrepare">
         <item>
-         <spacer name="horizontalSpacer3">
+         <spacer name="horizontalSpacer_1">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -215,16 +206,13 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="styleSheet">
-           <string notr="true">padding: 4px 14px</string>
-          </property>
           <property name="text">
            <string>Prepare screenshots for uploading...</string>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer4">
+         <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -242,7 +230,7 @@
        </layout>
       </item>
       <item row="0" column="3">
-       <spacer name="horizontalSpacer_7">
+       <spacer name="horizontalSpacer_12">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -260,7 +248,7 @@
       <item row="3" column="2" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayoutStatus">
         <item>
-         <spacer name="horizontalSpacer">
+         <spacer name="horizontalSpacer_3">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -313,7 +301,7 @@
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer_2">
+         <spacer name="horizontalSpacer_4">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -609,16 +597,13 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="styleSheet">
-                <string notr="true"/>
-               </property>
                <property name="text">
                 <string>Locate...</string>
                </property>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_10">
+              <spacer name="horizontalSpacer_7">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -633,7 +618,7 @@
             </layout>
            </item>
            <item row="1" column="1">
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <layout class="QHBoxLayout" name="horizontalLayout_1">
              <item>
               <widget class="QComboBox" name="comboBoxUserID">
                <property name="enabled">
@@ -678,7 +663,7 @@
             </layout>
            </item>
            <item row="2" column="1">
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
               <widget class="QComboBox" name="comboBoxGameID">
                <property name="enabled">
