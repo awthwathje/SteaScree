@@ -15,7 +15,7 @@ HEADERS     +=  mainwindow.h \
 
 FORMS       +=  mainwindow.ui
 
-VERSION     =   1.0.4.0
+VERSION     =   1.0.5.0
 
 macx:ICON   =   res/icons/SteaScree.icns
 

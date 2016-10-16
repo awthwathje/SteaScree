@@ -501,7 +501,7 @@ void Model::pushScreenshots(QString userID, QString gameID) // this routine copi
                 int tnWidth = 200;
                 int tnHeigth = (tnWidth * heigth) / width;
 
-                screenshot.scaled(QSize(tnWidth, tnHeigth), Qt::IgnoreAspectRatio).save(copyDest + "/thumbnails/" +
+                screenshot.scaled(QSize(tnWidth, tnHeigth), Qt::IgnoreAspectRatio, Qt::SmoothTransformation).save(copyDest + "/thumbnails/" +
                                                                                         filename, "jpg", 95);
                 QDateTime lm = QFileInfo(file).lastModified();
                 qint64 epoch = lm.toMSecsSinceEpoch();
