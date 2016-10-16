@@ -2,8 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QNetworkReply>
-#include <QSettings>
+#include <QTreeWidgetItem>
 
 
 namespace Ui {
@@ -15,10 +14,10 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void bootStrap();
 
 
 protected:
@@ -26,64 +25,60 @@ protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 
+private:
+    Ui::MainWindow *ui;
+    void toggleLabelInfo(bool isVisible);
+
+
+signals:
+    void getOS();
+    void pushButtonAddScreenshots_clicked();
+    void pushButtonPrepare_clicked();
+    void clearScreenshotPathsPool();
+    void getScreenshotPathsPoolLength();
+    void pushScreenshots(QString selectedUserID, QString selectedGameID);
+    void getSteamDir();
+    void setUserDataPaths(QString steamDir);
+    void clearCopyingStatusLabels();
+    void writeVDF();
+    void getVDFStatus();
+    void sendSettings(QSize size, QPoint pos, QString userID, QString gameID);
+    void sendComboBoxUserIDCurrentText(QString text);
+    void sendScreenshotsSelected(QStringList screenshotsSelected);
+
+
+public slots:
+    void setButtonPadding(QString os);
+    void addWidgetItemToScreenshotList(QTreeWidgetItem *item);
+    void resizeScreenshotListColumns();
+    void setWidgetsDisabled(QStringList list, bool disable);
+    void setVisibleProgressBar(int length);
+    void locateSteamDir(QString steamDir);
+    void prepareScreenshots(int addedLines);
+    void warnOnMissingVDF(bool userDataExists, QString vdfFilename);
+    void moveWindow(QSize geometry, QPoint moveToPoint);
+    void setLabelStatusErrorVisible(bool visible);
+    void setComboBoxesCleared(QStringList list);
+    void insertIntoComboBox(QString name, QStringList items);
+    void setIndexOfComboBoxUserID(QString item);
+    void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
+    void returnComboBoxUserIDCurrentText();
+    void returnScreenshotsSelected(QString lastSelectedScreenshotDir);
+    void setProgressBarValue(int value);
+    void deleteCopiedWidgetItem(QString path);
+    void setIndexOfComboBoxGameID(QString lastSelectedGameID);
+    void setLabelsText(QStringList list, QString text);
+
+
 private slots:
-    void warnOnMissingVDF();
-    void getGameNames(QNetworkReply *reply);
-    void on_pushButtonLocateSteamDir_clicked();
     void on_pushButtonAddScreenshots_clicked();
     void on_pushButtonClearQueue_clicked();
     void on_pushButtonCopyScreenshots_clicked();
     void on_pushButtonPrepare_clicked();
+    void on_pushButtonLocateSteamDir_clicked();
+    void checkVDF();
 
 
-signals:
-    void vdfIsMissing();
-
-
-private:
-    Ui::MainWindow *ui;
-    void setUserDataPaths(QString dir);
-    void writeSettings();
-    void readSettings();
-    void populateScreenshotQueue(QStringList screenshotPathsList);
-    void disableAllOnMissingSteamDir();
-    void pushScreenshots();
-    void toggleLabelInfo(bool isVisible);
-    QString convertSlashes(QString str);
-    QStringList readVDF();
-    void writeVDF(QStringList lines);
-
-    #if defined(Q_OS_WIN32)
-    const QString os = "Windows";
-    #elif defined(Q_OS_LINUX)
-    const QString os = "Linux";
-    #elif defined(Q_OS_OSX)
-    const QString os = "macOS";
-    #endif
-
-    bool isUnixLikeOS;
-    bool isFirstStart;
-    const QString vdfFilename = "screenshots.vdf";
-    QString selectedUserID;
-    QString userDataDir;
-    QString defaultSteamDir;
-    QSettings *settings;
-    QString steamDir;
-    QStringList vdfPaths;
-    QString userID;
-    QString someID;
-    QStringList gameIDs;
-    QHash<QString, QString> games;
-    QStringList screenshotPathsPool;
-    QStringList lines;
-    QString selectedGameID;
-    QString lastSelectedScreenshotDir;
-    QString lastSelectedUserID;
-    QString lastSelectedGameID;
-    QStringList copiedGames;
-    bool nothingAddedToVDF = true;
-    int copiedScreenshotsNum = 0;
-    int copiedDirsToNum = 0;
 };
 
 #endif // MAINWINDOW_H

@@ -1,26 +1,23 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2016-08-20T12:24:15
-#
-#-------------------------------------------------
+QT          +=  core gui network
 
-QT          += core gui network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET      = SteaScree
+TARGET      =   SteaScree
 
-TEMPLATE    = app
+TEMPLATE    =   app
 
-SOURCES     += main.cpp\
-               mainwindow.cpp
+SOURCES     +=  main.cpp\
+                mainwindow.cpp \
+                model.cpp
 
-HEADERS     += mainwindow.h
+HEADERS     +=  mainwindow.h \
+                model.h
 
-FORMS       += mainwindow.ui
+FORMS       +=  mainwindow.ui
 
-VERSION     = 1.0.3.0
+VERSION     =   1.0.4.0
 
-macx:ICON   = res/icons/SteaScree.icns
+macx:ICON   =   res/icons/SteaScree.icns
 
 win32:RC_ICONS                  = res/icons/SteaScree.ico
 win32:QMAKE_TARGET_COMPANY      = Foyl
