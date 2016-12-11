@@ -35,6 +35,7 @@ signals:
     void pushButtonAddScreenshots_clicked();
     void pushButtonPrepare_clicked();
     void clearScreenshotPathsPool();
+    void clearState();
     void getScreenshotPathsPoolLength();
     void pushScreenshots(QString selectedUserID, QString selectedGameID);
     void getSteamDir();
@@ -60,7 +61,6 @@ public slots:
     void setLabelStatusErrorVisible(bool visible);
     void setComboBoxesCleared(QStringList list);
     void insertIntoComboBox(QString name, QStringList items);
-    void setIndexOfComboBoxUserID(QString item);
     void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
     void returnComboBoxUserIDCurrentText();
     void returnScreenshotsSelected(QString lastSelectedScreenshotDir);

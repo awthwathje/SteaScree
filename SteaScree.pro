@@ -8,14 +8,14 @@ TEMPLATE    =   app
 
 SOURCES     +=  main.cpp\
                 mainwindow.cpp \
-                model.cpp
+    controller.cpp
 
 HEADERS     +=  mainwindow.h \
-                model.h
+    controller.h
 
 FORMS       +=  mainwindow.ui
 
-VERSION     =   1.0.5.0
+VERSION     =   1.0.5.1
 
 macx:ICON   =   res/icons/SteaScree.icns
 

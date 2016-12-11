@@ -1,7 +1,11 @@
 #include "mainwindow.h"
-#include "model.h"
+#include "controller.h"
 
 #include <QApplication>
+
+// TODO: maximum resolution check
+// TODO: app update check
+// TODO: grag'n'drop screenshots
 
 int main(int argc, char *argv[])
 {
@@ -12,111 +16,114 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("SteaScree");
 
     MainWindow w;
-    Model m;
+    Controller c;
 
     QObject::connect(&w, &MainWindow::getOS,
-                     &m, &Model::returnOS);
+                     &c, &Controller::returnOS);
 
-    QObject::connect(&m, &Model::sendOS,
+    QObject::connect(&c, &Controller::sendOS,
                      &w, &MainWindow::setButtonPadding);
 
-    QObject::connect(&m, &Model::addWidgetItemToScreenshotList,
+    QObject::connect(&c, &Controller::addWidgetItemToScreenshotList,
                      &w, &MainWindow::addWidgetItemToScreenshotList);
 
-    QObject::connect(&m, &Model::resizeScreenshotListColumns,
+    QObject::connect(&c, &Controller::resizeScreenshotListColumns,
                      &w, &MainWindow::resizeScreenshotListColumns);
 
     QObject::connect(&w, &MainWindow::getSteamDir,
-                     &m, &Model::returnSteamDir);
+                     &c, &Controller::returnSteamDir);
 
-    QObject::connect(&m, &Model::sendSteamDir,
+    QObject::connect(&c, &Controller::sendSteamDir,
                      &w, &MainWindow::locateSteamDir);
 
     QObject::connect(&w, &MainWindow::setUserDataPaths,
-                     &m, &Model::setUserDataPaths);
+                     &c, &Controller::setUserDataPaths);
 
     QObject::connect(&w, &MainWindow::pushButtonAddScreenshots_clicked,
-                     &m, &Model::returnLastSelectedScreenshotDir);
+                     &c, &Controller::returnLastSelectedScreenshotDir);
 
-    QObject::connect(&m, &Model::sendLastSelectedScreenshotDir,
+    QObject::connect(&c, &Controller::sendLastSelectedScreenshotDir,
                      &w, &MainWindow::returnScreenshotsSelected);
 
     QObject::connect(&w, &MainWindow::sendScreenshotsSelected,
-                     &m, &Model::addScreenshotsToPool);
+                     &c, &Controller::addScreenshotsToPool);
 
     QObject::connect(&w, &MainWindow::pushButtonPrepare_clicked,
-                     &m, &Model::returnLinesState);
+                     &c, &Controller::returnLinesState);
 
-    QObject::connect(&m, &Model::sendLinesState,
+    QObject::connect(&c, &Controller::sendLinesState,
                      &w, &MainWindow::prepareScreenshots);
 
-    QObject::connect(&m, &Model::disableWidgets,
+    QObject::connect(&c, &Controller::disableWidgets,
                      &w, &MainWindow::setWidgetsDisabled);
 
     QObject::connect(&w, &MainWindow::clearScreenshotPathsPool,
-                     &m, &Model::clearScreenshotPathsPool);
+                     &c, &Controller::clearScreenshotPathsPool);
+
+    QObject::connect(&w, &MainWindow::clearState,
+                     &c, &Controller::clearState);
 
     QObject::connect(&w, &MainWindow::clearCopyingStatusLabels,
-                     &m, &Model::clearCopyingStatusLabels);
+                     &c, &Controller::clearCopyingStatusLabels);
 
     QObject::connect(&w, &MainWindow::getScreenshotPathsPoolLength,
-                     &m, &Model::returnScreenshotPathPoolLength);
+                     &c, &Controller::returnScreenshotPathPoolLength);
 
-    QObject::connect(&m, &Model::sendScreenshotPathPoolLength,
+    QObject::connect(&c, &Controller::sendScreenshotPathPoolLength,
                      &w, &MainWindow::setVisibleProgressBar);
 
     QObject::connect(&w, &MainWindow::writeVDF,
-                     &m, &Model::writeVDF);
+                     &c, &Controller::writeVDF);
 
     QObject::connect(&w, &MainWindow::pushScreenshots,
-                     &m, &Model::pushScreenshots);
+                     &c, &Controller::pushScreenshots);
 
     QObject::connect(&w, &MainWindow::getVDFStatus,
-                     &m, &Model::returnVDFStatus);
+                     &c, &Controller::returnVDFStatus);
 
-    QObject::connect(&m, &Model::sendVDFStatus,
+    QObject::connect(&c, &Controller::sendVDFStatus,
                      &w, &MainWindow::warnOnMissingVDF);
 
-    QObject::connect(&m, &Model::moveWindow,
+    QObject::connect(&c, &Controller::moveWindow,
                      &w, &MainWindow::moveWindow);
 
-    QObject::connect(&m, &Model::setLabelStatusErrorVisible,
+    QObject::connect(&c, &Controller::setLabelStatusErrorVisible,
                      &w, &MainWindow::setLabelStatusErrorVisible);
 
     QObject::connect(&w, &MainWindow::sendSettings,
-                     &m, &Model::writeSettings);
+                     &c, &Controller::writeSettings);
 
-    QObject::connect(&m, &Model::clearWidgets,
+    QObject::connect(&c, &Controller::clearWidgets,
                      &w, &MainWindow::setComboBoxesCleared);
 
-    QObject::connect(&m, &Model::sendToComboBox,
+    QObject::connect(&c, &Controller::sendToComboBox,
                      &w, &MainWindow::insertIntoComboBox);
 
-    QObject::connect(&m, &Model::setIndexOfComboBoxGameID,
+    QObject::connect(&c, &Controller::setIndexOfComboBoxGameID,
                      &w, &MainWindow::setIndexOfComboBoxGameID);
 
-    QObject::connect(&m, &Model::setLabelsOnMissingStuff,
+    QObject::connect(&c, &Controller::setLabelsOnMissingStuff,
                      &w, &MainWindow::setLabelsOnMissingStuff);
 
-    QObject::connect(&m, &Model::getComboBoxUserIDCurrentText,
+    QObject::connect(&c, &Controller::getComboBoxUserIDCurrentText,
                      &w, &MainWindow::returnComboBoxUserIDCurrentText,
                      Qt::DirectConnection);
 
     QObject::connect(&w, &MainWindow::sendComboBoxUserIDCurrentText,
-                     &m, &Model::setSelectedUserID);
+                     &c, &Controller::setSelectedUserID);
 
-    QObject::connect(&m, &Model::sendLabelsText,
+    QObject::connect(&c, &Controller::sendLabelsText,
                      &w, &MainWindow::setLabelsText);
 
-    QObject::connect(&m, &Model::setProgressBarValue,
+    QObject::connect(&c, &Controller::setProgressBarValue,
                      &w, &MainWindow::setProgressBarValue);
 
-    QObject::connect(&m, &Model::deleteCopiedWidgetItem,
+    QObject::connect(&c, &Controller::deleteCopiedWidgetItem,
                      &w, &MainWindow::deleteCopiedWidgetItem);
 
     w.show();
     w.bootStrap();
-    m.bootStrap();
+    c.bootStrap();
 
     return a.exec();
 }

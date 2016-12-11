@@ -132,6 +132,7 @@ void MainWindow::setLabelsText(QStringList list, QString text)
     };
 }
 
+
 void MainWindow::setWidgetsDisabled(QStringList list, bool disable)
 {
     QStringListIterator i(list);
@@ -179,12 +180,6 @@ void MainWindow::insertIntoComboBox(QString name, QStringList items)
 {
     QComboBox *comboBox = this->findChild<QComboBox*>(name);
     comboBox->insertItems(0, items);
-}
-
-
-void MainWindow::setIndexOfComboBoxUserID(QString item)
-{
-    ui->comboBoxUserID->setCurrentIndex(ui->comboBoxUserID->findText(item));
 }
 
 
@@ -262,11 +257,12 @@ void MainWindow::prepareScreenshots(int addedLines)
 
             toggleLabelInfo(false);
             setLabelsText(QStringList() << "labelInfoScreenshots" << "labelInfoDirectories", "0");
-            emit clearScreenshotPathsPool();
-
             ui->pushButtonPrepare->setDisabled(true);
 
             emit writeVDF();
+
+            emit clearScreenshotPathsPool();
+            emit clearState();
 
             QMessageBox msgBox(this);
             msgBox.setIcon(QMessageBox::Information);

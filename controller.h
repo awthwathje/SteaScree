@@ -1,17 +1,17 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include <QObject>
 #include <QSettings>
 #include <QTreeWidgetItem>
 #include <QNetworkReply>
 
-class Model : public QObject
+class Controller : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Model(QObject *parent = 0);
+    explicit Controller(QObject *parent = 0);
     void bootStrap();
 
 
@@ -22,7 +22,6 @@ private:
     void populateScreenshotQueue(QStringList screenshotPathsList);
 
     bool isUnixLikeOS;
-    bool isFirstStart;
     const QString vdfFilename = "screenshots.vdf";
     QString selectedUserID;
     QString selectedGameID;
@@ -68,7 +67,6 @@ signals:
     void disableWidgets(QStringList list, bool disable);
     void clearWidgets(QStringList list);
     void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
-    void setIndexOfComboBoxUserID(QString item);
     void getComboBoxUserIDCurrentText();
     void sendLastSelectedScreenshotDir(QString lastSelectedScreenshotDir);
     void setProgressBarValue(int value);
@@ -84,6 +82,7 @@ public slots:
     void removeEntryFromScreenshotPathsPool(QString entry);
     void returnLastSelectedScreenshotDir();
     void clearScreenshotPathsPool();
+    void clearState();
     void returnScreenshotPathPoolLength();
     void pushScreenshots(QString userID, QString gameID);
     void setUserDataPaths(QString dir);
@@ -102,4 +101,4 @@ private slots:
 
 };
 
-#endif // MODEL_H
+#endif // CONTROLLER_H

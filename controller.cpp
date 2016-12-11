@@ -1,4 +1,4 @@
-#include "model.h"
+#include "controller.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -28,12 +28,12 @@
 #include <QApplication>
 
 
-Model::Model(QObject *parent) : QObject(parent)
+Controller::Controller(QObject *parent) : QObject(parent)
 {    
 }
 
 
-void Model::bootStrap()
+void Controller::bootStrap()
 {
     if ( (os == "Linux") | (os == "macOS") ) {
         isUnixLikeOS = true;
@@ -67,18 +67,14 @@ void Model::bootStrap()
 }
 
 
-void Model::readSettings()
+void Controller::readSettings()
 {
-    settings->beginGroup("Main");
-       isFirstStart = settings->value("FirstStart", true).toBool();
-    settings->endGroup();
-
     settings->beginGroup("WindowGeometry");
         QRect rec = QApplication::desktop()->availableGeometry();
         QSize geometry = settings->value("Size", QSize(685, 450)).toSize();
-        QPoint moveToPoint = settings->value("Position", QPoint((rec.width()-800)/2, (rec.height()-800)/2)).toPoint();
+        QPoint moveToPoint = settings->value("Position", QPoint((rec.width()-685)/2, (rec.height()-450)/2)).toPoint();
         emit moveWindow(geometry, moveToPoint);
-    settings->endGroup();
+    settings->endGroup();    
 
     settings->beginGroup("LastSelection");
         steamDir = settings->value("SteamDir", defaultSteamDir).toString();
@@ -97,12 +93,8 @@ void Model::readSettings()
 }
 
 
-void Model::writeSettings(QSize size, QPoint pos, QString userID, QString gameID)
+void Controller::writeSettings(QSize size, QPoint pos, QString userID, QString gameID)
 {
-    settings->beginGroup("Main");
-        settings->setValue("FirstStart", isFirstStart);
-    settings->endGroup();
-
     settings->beginGroup("WindowGeometry");
         settings->setValue("Size", size);
         settings->setValue("Position", pos);
@@ -123,7 +115,7 @@ void Model::writeSettings(QSize size, QPoint pos, QString userID, QString gameID
 }
 
 
-void Model::setUserDataPaths(QString dir) // function to validate and set data paths and IDs
+void Controller::setUserDataPaths(QString dir) // function to validate and set data paths and IDs
 {
     userDataDir = dir + "/userdata";
     QStringList userIDsCombined;
@@ -171,17 +163,12 @@ void Model::setUserDataPaths(QString dir) // function to validate and set data p
                 items = userIDsCombined.replaceInStrings("/", "\\");
             emit sendToComboBox("comboBoxUserID", items);
 
-            if ( !isFirstStart )
-                emit setIndexOfComboBoxUserID(lastSelectedUserID);
-
-            isFirstStart = false;
-
             emit sendToComboBox("comboBoxGameID", QStringList() << "loading...");
 
             QNetworkAccessManager *nam = new QNetworkAccessManager(this);
 
             QObject::connect(nam, &QNetworkAccessManager::finished,
-                             this, &Model::getGameNames);
+                             this, &Controller::getGameNames);
 
             nam->get(QNetworkRequest(QUrl("http://api.steampowered.com/ISteamApps/GetAppList/v2")));
 
@@ -193,7 +180,7 @@ void Model::setUserDataPaths(QString dir) // function to validate and set data p
 }
 
 
-void Model::getGameNames(QNetworkReply *reply)
+void Controller::getGameNames(QNetworkReply *reply)
 {
     if ( games.isEmpty() ) {
         
@@ -260,7 +247,7 @@ void Model::getGameNames(QNetworkReply *reply)
 }
 
 
-void Model::populateScreenshotQueue(QStringList screenshotPathsList) // function to populate screenshot queue with entries
+void Controller::populateScreenshotQueue(QStringList screenshotPathsList) // function to populate screenshot queue with entries
 {
     if ( !screenshotPathsList.isEmpty() ) {
 
@@ -285,7 +272,7 @@ void Model::populateScreenshotQueue(QStringList screenshotPathsList) // function
 }
 
 
-void Model::addScreenshotsToPool(QStringList screenshotsSelected)
+void Controller::addScreenshotsToPool(QStringList screenshotsSelected)
 {
     QListIterator<QString> i(screenshotsSelected);
     while ( i.hasNext() ) {
@@ -307,7 +294,7 @@ void Model::addScreenshotsToPool(QStringList screenshotsSelected)
 }
 
 
-QStringList Model::readVDF() // read text from the VDF and return it in the form of list of strings for easy manipulating
+QStringList Controller::readVDF() // read text from the VDF and return it in the form of list of strings for easy manipulating
 {
     QFile vdf(userDataDir + "/" + selectedUserID + "/" + vdfFilename);
     vdf.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -324,7 +311,7 @@ QStringList Model::readVDF() // read text from the VDF and return it in the form
 }
 
 
-void Model::writeVDF() // write to VDF from list of strings. previous contents are discarded
+void Controller::writeVDF() // write to VDF from list of strings. previous contents are discarded
 {
     QString vdfPath = userDataDir + "/" + selectedUserID + "/" + vdfFilename;
     QFile(vdfPath).copy(vdfPath + ".bak"); // backup VDF just in case
@@ -343,7 +330,7 @@ void Model::writeVDF() // write to VDF from list of strings. previous contents a
 }
 
 
-void Model::pushScreenshots(QString userID, QString gameID) // this routine copies screenshots to the respective folders and manipulates a string list copy of the VDF. VDF is not written
+void Controller::pushScreenshots(QString userID, QString gameID) // this routine copies screenshots to the respective folders and manipulates a string list copy of the VDF. VDF is not written
 {
     selectedUserID = userID.replace("\\", "/");
     selectedGameID = gameID.remove(QRegularExpression(" <.+>$")); // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
@@ -543,25 +530,25 @@ void Model::pushScreenshots(QString userID, QString gameID) // this routine copi
 }
 
 
-void Model::returnOS()
+void Controller::returnOS()
 {
     emit sendOS(os);
 }
 
 
-void Model::removeEntryFromScreenshotPathsPool(QString entry)
+void Controller::removeEntryFromScreenshotPathsPool(QString entry)
 {
     screenshotPathsPool.removeOne(entry);
 }
 
 
-void Model::setSelectedUserID(QString text)
+void Controller::setSelectedUserID(QString text)
 {
     selectedUserID = text;
 }
 
 
-QString Model::convertSlashes(QString str)
+QString Controller::convertSlashes(QString str)
 {
     QString converted;
 
@@ -574,52 +561,60 @@ QString Model::convertSlashes(QString str)
 }
 
 
-void Model::returnVDFStatus()
+void Controller::returnVDFStatus()
 {
     if ( vdfPaths.isEmpty() )
         emit sendVDFStatus(QDir(steamDir + "/userdata").exists(), vdfFilename);
 }
 
 
-void Model::returnLinesState()
+void Controller::returnLinesState()
 {
     emit sendLinesState(addedLines);
 }
 
 
-void Model::clearScreenshotPathsPool()
+void Controller::clearScreenshotPathsPool()
 {
     screenshotPathsPool.clear();
 }
 
 
-void Model::clearCopyingStatusLabels()
+void Controller::clearState()
+{
+    addedLines = 0;
+    lines.clear();
+    copiedGames.clear();
+}
+
+
+void Controller::clearCopyingStatusLabels()
 {
     copiedScreenshotsNum = 0;
     copiedDirsToNum = 0;
 }
 
 
-void Model::returnLastSelectedScreenshotDir()
+void Controller::returnLastSelectedScreenshotDir()
 {
     emit sendLastSelectedScreenshotDir(lastSelectedScreenshotDir);
 }
 
 
-void Model::returnScreenshotPathPoolLength()
+void Controller::returnScreenshotPathPoolLength()
 {
     if ( screenshotPathsPool.length() >= 10 )
         emit sendScreenshotPathPoolLength(screenshotPathsPool.length());
 }
 
 
-void Model::returnSteamDir()
+void Controller::returnSteamDir()
 {
     emit sendSteamDir(steamDir);
 }
 
 
-void Model::setSelectedIDs(QString userID, QString gameID)
+void Controller::setSelectedIDs(QString userID, QString gameID)
 {
     selectedUserID = userID;
     selectedGameID = gameID;
