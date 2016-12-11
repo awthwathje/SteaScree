@@ -71,3 +71,6 @@ Makefile*
 # QtCtreator CMake
 
 CMakeLists.txt.user*
+
+# macOS stuff
+.DS_Store

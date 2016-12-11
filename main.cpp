@@ -6,6 +6,7 @@
 // TODO: maximum resolution check
 // TODO: app update check
 // TODO: grag'n'drop screenshots
+// TODO: "Screenshot queue" widget is slightly bouncing during a window resize
 
 int main(int argc, char *argv[])
 {

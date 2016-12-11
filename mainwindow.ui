@@ -79,7 +79,7 @@
              <item>
               <widget class="QPushButton" name="pushButtonLocateSteamDir">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
+                <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
