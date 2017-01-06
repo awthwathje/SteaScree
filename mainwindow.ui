@@ -29,8 +29,43 @@
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <layout class="QGridLayout" name="gridLayoutMain">
-      <item row="0" column="2">
-       <widget class="QGroupBox" name="groupBoxDirectories">
+      <property name="horizontalSpacing">
+       <number>9</number>
+      </property>
+      <item row="10" column="2" colspan="2">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>5</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="3">
+       <spacer name="horizontalSpacer_12">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Maximum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>16777215</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="2" rowspan="2">
+       <widget class="QGroupBox" name="groupBox_directories">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -46,7 +81,7 @@
            <item row="0" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="QLabel" name="labelSteamDirValue">
+              <widget class="QLabel" name="label_steamDirValue">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -77,7 +112,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButtonLocateSteamDir">
+              <widget class="QPushButton" name="pushButton_locateSteamDir">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -110,7 +145,7 @@
            <item row="2" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
-              <widget class="QComboBox" name="comboBoxGameID">
+              <widget class="QComboBox" name="comboBox_gameID">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -155,7 +190,7 @@
            <item row="1" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_1">
              <item>
-              <widget class="QComboBox" name="comboBoxUserID">
+              <widget class="QComboBox" name="comboBox_userID">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -201,7 +236,7 @@
             </layout>
            </item>
            <item row="0" column="0">
-            <widget class="QLabel" name="labelSteamDir">
+            <widget class="QLabel" name="label_steamDir">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                <horstretch>0</horstretch>
@@ -214,7 +249,7 @@
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="labelGameID">
+            <widget class="QLabel" name="label_gameID">
              <property name="enabled">
               <bool>false</bool>
              </property>
@@ -248,7 +283,7 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="labelUserID">
+            <widget class="QLabel" name="label_userID">
              <property name="enabled">
               <bool>false</bool>
              </property>
@@ -286,208 +321,76 @@
         </layout>
        </widget>
       </item>
-      <item row="3" column="2" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayoutStatus">
+      <item row="11" column="2" colspan="6">
+       <layout class="QHBoxLayout" name="horizontalLayoutPrepare">
         <item>
-         <spacer name="horizontalSpacer_3">
+         <spacer name="horizontalSpacer_1">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Minimum</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>40</width>
+            <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item>
-         <widget class="QLabel" name="labelStatusError">
+         <widget class="QPushButton" name="pushButton_prepare">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="styleSheet">
-           <string notr="true">color: #bb3c2f;</string>
+          <property name="toolTip">
+           <string comment="If all screesnhots are copied to all game directories, push this and the VDF file will be updated."/>
           </property>
           <property name="text">
-           <string>Error text.</string>
+           <string>Prepare screenshots for uploading...</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QProgressBar" name="progressBarScreenshotsUploading">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>7</pointsize>
-           </font>
-          </property>
-          <property name="value">
-           <number>24</number>
-          </property>
+         <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+          <property name="sizeType">
+           <enum>QSizePolicy::Minimum</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>40</width>
+            <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
        </layout>
       </item>
-      <item row="9" column="2" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayoutInfo">
-        <item>
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="labelInfoScreenshots">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {color: gray;}</string>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignHCenter|Qt::AlignTop</set>
-          </property>
-         </widget>
-        </item>
-        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-         <widget class="QLabel" name="labelInfo1">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {color: gray;}</string>
-          </property>
-          <property name="text">
-           <string>screenshots copied to</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignHCenter|Qt::AlignTop</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="labelInfoDirectories">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {color: gray;}</string>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignHCenter|Qt::AlignTop</set>
-          </property>
-         </widget>
-        </item>
-        <item alignment="Qt::AlignTop">
-         <widget class="QLabel" name="labelInfo2">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {color: gray;}</string>
-          </property>
-          <property name="text">
-           <string>game directories</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignHCenter|Qt::AlignTop</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_6">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item row="10" column="2" colspan="2">
-       <spacer name="verticalSpacer">
+      <item row="0" column="3" colspan="5">
+       <spacer name="verticalSpacer_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
+         <enum>QSizePolicy::Minimum</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>20</width>
-          <height>5</height>
+          <height>40</height>
          </size>
         </property>
        </spacer>
       </item>
-      <item row="7" column="2" colspan="2">
-       <widget class="QGroupBox" name="groupBoxScreenshotQueue">
+      <item row="7" column="2" colspan="6">
+       <widget class="QGroupBox" name="groupBox_screenshotQueue">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -506,7 +409,7 @@
            <item row="1" column="0">
             <layout class="QHBoxLayout" name="horizontalLayoutScreenshotListButtons">
              <item alignment="Qt::AlignLeft">
-              <widget class="QPushButton" name="pushButtonClearQueue">
+              <widget class="QPushButton" name="pushButton_clearQueue">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -535,7 +438,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButtonCopyScreenshots">
+              <widget class="QPushButton" name="pushButton_copyScreenshots">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -567,7 +470,7 @@
               </spacer>
              </item>
              <item alignment="Qt::AlignRight">
-              <widget class="QPushButton" name="pushButtonAddScreenshots">
+              <widget class="QPushButton" name="pushButton_addScreenshots">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
@@ -582,7 +485,7 @@
             </layout>
            </item>
            <item row="0" column="0">
-            <widget class="QTreeWidget" name="treeWidgetScreenshotList">
+            <widget class="QTreeWidget" name="treeWidget_screenshotList">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -640,75 +543,221 @@
         </layout>
        </widget>
       </item>
-      <item row="11" column="2" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayoutPrepare">
+      <item row="9" column="2" colspan="6">
+       <layout class="QHBoxLayout" name="horizontalLayoutInfo">
         <item>
-         <spacer name="horizontalSpacer_1">
+         <spacer name="horizontalSpacer_5">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Minimum</enum>
-          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>40</width>
-            <height>20</height>
+            <width>0</width>
+            <height>0</height>
            </size>
           </property>
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButtonPrepare">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QLabel" name="label_infoScreenshots">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
           </property>
-          <property name="toolTip">
-           <string comment="If all screesnhots are copied to all game directories, push this and the VDF file will be updated."/>
+          <property name="styleSheet">
+           <string notr="true">QLabel {color: gray;}</string>
           </property>
           <property name="text">
-           <string>Prepare screenshots for uploading...</string>
+           <string>0</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignHCenter|Qt::AlignTop</set>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+         <widget class="QLabel" name="label_infoScreenshotsCopied">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel {color: gray;}</string>
+          </property>
+          <property name="text">
+           <string>screenshots copied to</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignHCenter|Qt::AlignTop</set>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer_2">
+         <widget class="QLabel" name="label_infoDirectories">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel {color: gray;}</string>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignHCenter|Qt::AlignTop</set>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignTop">
+         <widget class="QLabel" name="label_infoDirectoriesCopied">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel {color: gray;}</string>
+          </property>
+          <property name="text">
+           <string>game directories</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignHCenter|Qt::AlignTop</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Minimum</enum>
-          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>40</width>
-            <height>20</height>
+            <width>0</width>
+            <height>0</height>
            </size>
           </property>
          </spacer>
         </item>
        </layout>
       </item>
-      <item row="0" column="3">
-       <spacer name="horizontalSpacer_12">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>16777215</width>
-          <height>0</height>
-         </size>
-        </property>
-       </spacer>
+      <item row="1" column="4" colspan="4">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QProgressBar" name="progressBar_status">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>13</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>7</pointsize>
+           </font>
+          </property>
+          <property name="value">
+           <number>24</number>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_progress">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>10</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>10</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>10</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">text-align: right;</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_status">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>status text</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>

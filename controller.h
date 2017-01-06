@@ -1,14 +1,21 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include "largefiledialog.h"
+#include "mainwindow.h"
+#include "screenshot.h"
+
 #include <QObject>
 #include <QSettings>
 #include <QTreeWidgetItem>
 #include <QNetworkReply>
+#include <QPushButton>
+
 
 class Controller : public QObject
 {
-    Q_OBJECT
+    Q_OBJECT       
+
 
 public:
     explicit Controller(QObject *parent = 0);
@@ -20,7 +27,6 @@ private:
     QString convertSlashes(QString str);
     QStringList readVDF();
     void populateScreenshotQueue(QStringList screenshotPathsList);
-
     bool isUnixLikeOS;
     const QString vdfFilename = "screenshots.vdf";
     QString selectedUserID;
@@ -40,10 +46,17 @@ private:
     QString lastSelectedUserID;
     QString lastSelectedGameID;
     QStringList copiedGames;
-    int lastEntryValue;
-    int copiedScreenshotsNum = 0;
-    int copiedDirsToNum = 0;
-    int addedLines = 0;
+    QString copyDest;
+    qint32 opening;
+    qint32 closing;
+    qint32 lastEntryValue;
+    quint32 copiedScreenshotsNum = 0;
+    quint32 copiedDirsToNum = 0;
+    quint32 addedLines = 0;
+    LargeFileDialog *largeFileDialog;
+    QList<Screenshot> preparedScreenshotList;
+    const quint32 steamMaxSideSize = 16000;
+    const quint32 steamMaxResolution = 26210175;
 
     #if defined(Q_OS_WIN32)
     const QString os = "Windows";
@@ -53,38 +66,49 @@ private:
     const QString os = "macOS";
     #endif
 
+    void pushScreenshots(QList<Screenshot> screenshotList);
+    void resizeAndSaveLargeScreenshot(Screenshot screenshot);
+    void getUserDecisionAboutLargeScreenshots(QList<Screenshot> screenshotList, MainWindow *mainWindow);
+    void saveThumbnail(QString filename, QImage image, quint32 width, quint32 height);
+
 
 signals:
-    void sendOS(QString);
+    void adjustButtons(QList<QPushButton*> buttonList, QString os);
     void addWidgetItemToScreenshotList(QTreeWidgetItem *item);
     void resizeScreenshotListColumns();
-    void sendScreenshotPathPoolLength(int length);
+    void sendProgressBarLength(quint32 length);
     void sendSteamDir(QString steamDir);
-    void sendLinesState(bool isVDFEmpty);
+    void sendLinesState(quint32 addedLines);
     void sendVDFStatus(bool userDataExists, QString vdfFilename);
     void moveWindow(QSize geometry, QPoint moveToPoint);
     void setLabelStatusErrorVisible(bool visible);
-    void disableWidgets(QStringList list, bool disable);
-    void clearWidgets(QStringList list);
-    void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
+    void sendWidgetsDisabled(QStringList list, bool disable);
+    void sendLabelsCleared(QStringList list);
+    void sendLabelsVisible(QStringList list, bool visible);
+    void sendComboBoxesCleared(QStringList list);
+    void sendLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
     void getComboBoxUserIDCurrentText();
     void sendLastSelectedScreenshotDir(QString lastSelectedScreenshotDir);
-    void setProgressBarValue(int value);
+    void sendProgressBarValue(quint32 value);
     void deleteCopiedWidgetItem(QString path);
     void sendToComboBox(QString name, QStringList items);
-    void setIndexOfComboBoxGameID(QString lastSelectedGameID);
+    void sendIndexOfComboBoxGameID(QString lastSelectedGameID);
     void sendLabelsText(QStringList list, QString text);
+    void sendScreenshotList(QList<Screenshot> screenshotList, QPoint center, QStringList steamLimits);
+    void sendStatusLabelText(QString text, QString color);
+    void setupStatusArea(quint32 progressBarMaximum);
+    void sendDirStatusLabelsVisible(bool visible);
 
 
 public slots:
-    void returnOS();
+    void getButtonList(QList<QPushButton *> buttonList);
     void writeSettings(QSize size, QPoint pos, QString userID, QString gameID);
     void removeEntryFromScreenshotPathsPool(QString entry);
     void returnLastSelectedScreenshotDir();
     void clearScreenshotPathsPool();
     void clearState();
     void returnScreenshotPathPoolLength();
-    void pushScreenshots(QString userID, QString gameID);
+    void prepareScreenshots(QString userID, QString gameID, MainWindow *mainWindow);
     void setUserDataPaths(QString dir);
     void returnSteamDir();
     void writeVDF();
@@ -94,11 +118,11 @@ public slots:
     void setSelectedUserID(QString text);
     void addScreenshotsToPool(QStringList screenshotsSelected);
     void setSelectedIDs(QString userID, QString gameID);
+    void prepareScreenshotListWithDecisions(QList<Screenshot> screenshotList);
 
 
 private slots:
     void getGameNames(QNetworkReply *reply);
-
 };
 
 #endif // CONTROLLER_H
