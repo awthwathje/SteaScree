@@ -72,6 +72,7 @@ private:
     void getUserDecisionAboutLargeScreenshots(QList<Screenshot> screenshotList, MainWindow *mainWindow);
     void saveThumbnail(QString filename, QImage image, quint32 width, quint32 height);
     void checkForUpdates();
+    QString getPersonalNameByUserID(QString userID);
 
 
 signals:

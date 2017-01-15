@@ -28,7 +28,6 @@
 #include <QApplication>
 #include <QtMath>
 #include <QVersionNumber>
-#include <QDebug>
 
 
 Controller::Controller(QObject *parent) : QObject(parent)
@@ -194,6 +193,7 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 
             steamDir = dir;
 
+            QStringList userIDsCombinedWithNames;
             QListIterator<QString> i(vdfPaths);
             while ( i.hasNext() ) {
                 QString current = i.next();
@@ -201,13 +201,15 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
                 userID = splitted.takeAt(splitted.length() - 3);
                 someID = splitted.takeAt(splitted.length() - 2);
                 userIDsCombined << userID + "/" + someID;
+                QString personalName = getPersonalNameByUserID(userID);
+                userIDsCombinedWithNames << userID + "/" + someID + personalName;
             }
 
             QStringList items;
             if ( isUnixLikeOS )
-                items = userIDsCombined;
+                items = userIDsCombinedWithNames;
             else
-                items = userIDsCombined.replaceInStrings("/", "\\");
+                items = userIDsCombinedWithNames.replaceInStrings("/", "\\");
             emit sendToComboBox("comboBox_userID", items);
 
             emit sendToComboBox("comboBox_gameID", QStringList() << "loading...");
@@ -224,6 +226,40 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 
     } else
         emit sendLabelsOnMissingStuff(true, vdfFilename);
+}
+
+
+QString Controller::getPersonalNameByUserID(QString userID)
+{
+    QStringList configFiles;
+    QDirIterator i(userDataDir + "/" + userID, QStringList() << "config.cfg", QDir::Files, QDirIterator::Subdirectories);
+    while ( i.hasNext() ) {
+        configFiles << i.next();
+    }
+
+    if (configFiles.length() == 1) { // proceed only if there is one config.cfg per user
+
+        QFile vdf(configFiles[0]);
+        vdf.open(QIODevice::ReadOnly | QIODevice::Text);
+        QTextStream text(&vdf);
+        QStringList lines;
+
+        while ( !text.atEnd() ) {
+            QString line = text.readLine();
+            lines << line;
+        }
+
+        vdf.close();
+
+        QRegularExpression re("^name \"(?<name>.+)\"$");
+        int pos = lines.indexOf(re);
+        QRegularExpressionMatch matchNew;
+
+        if ( (lines[pos].contains(re, &matchNew)) )
+            return " <" + matchNew.captured("name") + ">";
+    }
+
+    return "";
 }
 
 
@@ -378,8 +414,9 @@ void Controller::writeVDF()         // write to VDF from list of strings. previo
 
 void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *mainWindow)   // this routine copies screenshots to the respective folders
 {                                                                   // ...and manipulates a string list copy of the VDF (file is not written yet)
-    selectedUserID = userID.replace("\\", "/");
-    selectedGameID = gameID.remove(QRegularExpression(" <.+>$"));   // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
+    QRegularExpression desc(" <.+>$");
+    selectedUserID = userID.replace("\\", "/").remove(desc);
+    selectedGameID = gameID.remove(desc);   // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
 
     if ( lines.isEmpty() )
         lines = readVDF();
@@ -746,7 +783,7 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
     if (addedLines > 0) {
         emit sendLabelsText(QStringList() << "label_infoDirectories", QString::number(copiedDirsToNum));
         emit sendDirStatusLabelsVisible(true);
-        emit sendStatusLabelText("screenshots are ready for preparation", "gray");
+        emit sendStatusLabelText("screenshots are ready for preparation", "grey");
         emit sendWidgetsDisabled(QStringList() << "pushButton_prepare", false);
     }
 

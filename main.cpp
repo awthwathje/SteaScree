@@ -8,7 +8,6 @@
 Q_DECLARE_METATYPE(Screenshot)
 
 
-// TODO: show usernames alongside user IDs
 // TODO: grag'n'drop screenshots
 // TODO: UI in separate thread
 // TODO: multi-threading

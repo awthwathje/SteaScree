@@ -1,5 +1,8 @@
 # SteaScree Changelog
 
+## 1.3.0
+* Personal name is now shown in the combobox alongside user ID. Useful when a computer is shared among a number of Steam users.
+
 ## 1.2.0
 * Added check for an updated version. There is an option to never offer updates.
 * Tooltips.
