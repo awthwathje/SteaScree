@@ -5,16 +5,11 @@
 
 #include <QApplication>
 
-
 Q_DECLARE_METATYPE(Screenshot)
 
 
-// TODO: maximum resolution check
-// TODO: app update check
+// TODO: show usernames alongside user IDs
 // TODO: grag'n'drop screenshots
-// TODO: "Screenshot queue" widget slightly bounces when the window gets resized
-// TODO: make explanatory tooltips in main window
-// TODO: more "in progress" states
 // TODO: UI in separate thread
 // TODO: multi-threading
 
@@ -26,6 +21,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Foyl");
     QCoreApplication::setOrganizationDomain("foyl.io");
     QCoreApplication::setApplicationName("SteaScree");
+    QCoreApplication::setApplicationVersion(QString(APP_VERSION));
 
     MainWindow w;
     Controller c;
@@ -100,17 +96,8 @@ int main(int argc, char *argv[])
     QObject::connect(&w, &MainWindow::sendSelectedIDs,
                      &c, &Controller::prepareScreenshots);
 
-    QObject::connect(&w, &MainWindow::getVDFStatus,
-                     &c, &Controller::returnVDFStatus);
-
-    QObject::connect(&c, &Controller::sendVDFStatus,
-                     &w, &MainWindow::warnOnMissingVDF);
-
     QObject::connect(&c, &Controller::moveWindow,
                      &w, &MainWindow::moveWindow);
-
-//    QObject::connect(&c, &Controller::setLabelStatusErrorVisible,
-//                     &w, &MainWindow::setLabelStatusErrorVisible);
 
     QObject::connect(&w, &MainWindow::sendSettings,
                      &c, &Controller::writeSettings);
@@ -145,6 +132,12 @@ int main(int argc, char *argv[])
 
     QObject::connect(&c, &Controller::deleteCopiedWidgetItem,
                      &w, &MainWindow::deleteCopiedWidgetItem);
+
+    QObject::connect(&c, &Controller::sendUpdateInfo,
+                     &w, &MainWindow::offerUpdate);
+
+    QObject::connect(&w, &MainWindow::sendNeverOfferUpdate,
+                     &c, &Controller::writeSettingNeverOfferUpdate);
 
     w.show();
     w.bootStrap();

@@ -1,9 +1,7 @@
 #include "largefiledialog.h"
 #include "ui_largefiledialog.h"
 
-
 #include <QCloseEvent>
-#include <QDebug>
 
 
 LargeFileDialog::LargeFileDialog(QWidget *parent) :

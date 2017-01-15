@@ -25,7 +25,6 @@ public:
 
 
 protected:
-    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 
@@ -52,6 +51,7 @@ signals:
     void sendSettings(QSize size, QPoint pos, QString userID, QString gameID);
     void sendComboBoxUserIDCurrentText(QString text);
     void sendScreenshotsSelected(QStringList screenshotsSelected);
+    void sendNeverOfferUpdate();
 
 
 public slots:
@@ -61,7 +61,6 @@ public slots:
     void setProgressBarLength(quint32 length);
     void locateSteamDir(QString steamDir);
     void prepareScreenshots(quint32 addedLines);
-    void warnOnMissingVDF(bool userDataExists, QString vdfFilename);
     void moveWindow(QSize geometry, QPoint moveToPoint);
     void setComboBoxesCleared(QStringList list);
     void setLabelsCleared(QStringList list);
@@ -76,6 +75,7 @@ public slots:
     void setLabelsVisible(QStringList list, bool visible);
     void setStatusLabelText(QString text, QString color);
     void setDirStatusLabelsVisible(bool visible);
+    void offerUpdate(QString version, QString link);
 
 
 private slots:
@@ -84,7 +84,6 @@ private slots:
     void on_pushButton_copyScreenshots_clicked();
     void on_pushButton_prepare_clicked();
     void on_pushButton_locateSteamDir_clicked();
-    void checkVDF();
 };
 
 #endif // MAINWINDOW_H

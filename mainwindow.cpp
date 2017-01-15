@@ -16,6 +16,7 @@
 #include <QCloseEvent>
 #include <QCheckBox>
 #include <QMovie>
+#include <QDesktopServices>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -53,12 +54,6 @@ void MainWindow::bootStrap()
 }
 
 
-void MainWindow::checkVDF()
-{
-    emit getVDFStatus();
-}
-
-
 void MainWindow::addWidgetItemToScreenshotList(QTreeWidgetItem *item)
 {
     ui->treeWidget_screenshotList->addTopLevelItem(item);
@@ -69,24 +64,6 @@ void MainWindow::resizeScreenshotListColumns()
 {
     ui->treeWidget_screenshotList->resizeColumnToContents(0); // after all has been added, resize columns for a better appearance
     ui->treeWidget_screenshotList->resizeColumnToContents(1);
-}
-
-
-void MainWindow::warnOnMissingVDF(bool userDataExists, QString vdfFilename)
-{
-    QMessageBox msgBox(this);
-    msgBox.setIcon(QMessageBox::Warning);
-
-    if ( !userDataExists ) {
-        msgBox.setText("SteaScree has been unable to find a Steam userdata directory in the current location.");
-        msgBox.setInformativeText("Please choose an existing Steam directory.");
-    } else {
-        msgBox.setText("Steam userdata directory is found, but there is no " + vdfFilename);
-        msgBox.setInformativeText("Please start Steam, make some screenshots with it and try again.");
-    }
-
-    msgBox.exec();
-    ui->label_status->clear();
 }
 
 
@@ -108,6 +85,28 @@ void MainWindow::locateSteamDir(QString steamDir)
         steamDirLocated.remove(QRegularExpression("/userdata$"));
         emit sendUserDataPaths(steamDirLocated);
     }
+}
+
+
+void MainWindow::offerUpdate(QString version, QString link)
+{
+    QMessageBox msgBox(this);
+    msgBox.setIcon(QMessageBox::Question);
+    QString text = "New version available.";
+    QString info = "SteaScree version " + version + " is available online. Would you like to download it?";
+    msgBox.setText(text);
+    msgBox.setInformativeText(info);
+    QPushButton *never = msgBox.addButton("Never", QMessageBox::RejectRole);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+
+    makeWideMessageBox(&msgBox, 400);
+    int ret = msgBox.exec();
+
+    if ( ret == QMessageBox::Yes )
+        QDesktopServices::openUrl(QUrl(link));
+    else if ( msgBox.clickedButton() == never )
+        emit sendNeverOfferUpdate();
 }
 
 
@@ -368,13 +367,6 @@ void MainWindow::on_pushButton_prepare_clicked()
 }
 
 
-void MainWindow::showEvent(QShowEvent *event) // hack to show message boxes only after the main window is shown
-{
-    QMainWindow::showEvent(event);
-    QTimer::singleShot(50, this, SLOT(checkVDF()));
-}
-
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     emit sendSettings(size(), pos(),
@@ -382,4 +374,3 @@ void MainWindow::closeEvent(QCloseEvent *event)
                       ui->comboBox_gameID->currentText().remove(QRegularExpression(" <.+>$")));
     event->accept();
 }
-

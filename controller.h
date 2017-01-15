@@ -14,7 +14,7 @@
 
 class Controller : public QObject
 {
-    Q_OBJECT       
+    Q_OBJECT
 
 
 public:
@@ -57,19 +57,21 @@ private:
     QList<Screenshot> preparedScreenshotList;
     const quint32 steamMaxSideSize = 16000;
     const quint32 steamMaxResolution = 26210175;
+    QString offerUpdateSetting;
 
     #if defined(Q_OS_WIN32)
-    const QString os = "Windows";
+        const QString os = "Windows";
     #elif defined(Q_OS_LINUX)
-    const QString os = "Linux";
-    #elif defined(Q_OS_OSX)
-    const QString os = "macOS";
+        const QString os = "Linux";
+        #elif defined(Q_OS_OSX)
+        const QString os = "macOS";
     #endif
 
     void pushScreenshots(QList<Screenshot> screenshotList);
     void resizeAndSaveLargeScreenshot(Screenshot screenshot);
     void getUserDecisionAboutLargeScreenshots(QList<Screenshot> screenshotList, MainWindow *mainWindow);
     void saveThumbnail(QString filename, QImage image, quint32 width, quint32 height);
+    void checkForUpdates();
 
 
 signals:
@@ -79,7 +81,6 @@ signals:
     void sendProgressBarLength(quint32 length);
     void sendSteamDir(QString steamDir);
     void sendLinesState(quint32 addedLines);
-    void sendVDFStatus(bool userDataExists, QString vdfFilename);
     void moveWindow(QSize geometry, QPoint moveToPoint);
     void setLabelStatusErrorVisible(bool visible);
     void sendWidgetsDisabled(QStringList list, bool disable);
@@ -98,6 +99,7 @@ signals:
     void sendStatusLabelText(QString text, QString color);
     void setupStatusArea(quint32 progressBarMaximum);
     void sendDirStatusLabelsVisible(bool visible);
+    void sendUpdateInfo(QString version, QString link);
 
 
 public slots:
@@ -114,14 +116,15 @@ public slots:
     void writeVDF();
     void returnLinesState();
     void clearCopyingStatusLabels();
-    void returnVDFStatus();
     void setSelectedUserID(QString text);
     void addScreenshotsToPool(QStringList screenshotsSelected);
     void setSelectedIDs(QString userID, QString gameID);
     void prepareScreenshotListWithDecisions(QList<Screenshot> screenshotList);
+    void writeSettingNeverOfferUpdate();
 
 
 private slots:
+    void handleUpdate(QNetworkReply *reply);
     void getGameNames(QNetworkReply *reply);
 };
 

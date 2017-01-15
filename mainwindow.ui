@@ -19,6 +19,15 @@
   <property name="windowTitle">
    <string>SteaScree</string>
   </property>
+  <property name="toolTip">
+   <string comment="tooltip" extracomment="tooltip foo"/>
+  </property>
+  <property name="statusTip">
+   <string comment="status" extracomment="status foo"/>
+  </property>
+  <property name="whatsThis">
+   <string comment="whats" extracomment="whats foo"/>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -54,11 +63,11 @@
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeType">
-         <enum>QSizePolicy::Maximum</enum>
+         <enum>QSizePolicy::Expanding</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>16777215</width>
+          <width>0</width>
           <height>0</height>
          </size>
         </property>
@@ -67,10 +76,16 @@
       <item row="0" column="2" rowspan="2">
        <widget class="QGroupBox" name="groupBox_directories">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>292</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="title">
          <string>IDs</string>
@@ -93,6 +108,12 @@
                  <width>0</width>
                  <height>0</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>If there are multiple Steam installations, select the one to which screenshots will be copied</string>
+               </property>
+               <property name="toolTipDuration">
+                <number>-1</number>
                </property>
                <property name="styleSheet">
                 <string notr="true"/>
@@ -118,6 +139,9 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>If there are multiple Steam installations, select the one to which screenshots will be copied</string>
                </property>
                <property name="text">
                 <string>Locate...</string>
@@ -160,6 +184,12 @@
                  <width>100</width>
                  <height>0</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>You can paste copied game ID here directly</string>
+               </property>
+               <property name="toolTipDuration">
+                <number>-1</number>
                </property>
                <property name="editable">
                 <bool>true</bool>
@@ -205,6 +235,15 @@
                  <width>100</width>
                  <height>0</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>If there are multiple Steam users on this PC, you may switch between them here</string>
+               </property>
+               <property name="toolTipDuration">
+                <number>-1</number>
+               </property>
+               <property name="statusTip">
+                <string/>
                </property>
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
@@ -348,7 +387,7 @@
            </sizepolicy>
           </property>
           <property name="toolTip">
-           <string comment="If all screesnhots are copied to all game directories, push this and the VDF file will be updated."/>
+           <string>If all screesnhots are copied to all game directories, push this and the VDF file will be updated.</string>
           </property>
           <property name="text">
            <string>Prepare screenshots for uploading...</string>
@@ -383,7 +422,7 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>20</width>
+          <width>0</width>
           <height>40</height>
          </size>
         </property>
@@ -416,6 +455,9 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="toolTip">
+                <string/>
+               </property>
                <property name="text">
                 <string>Clear queue</string>
                </property>
@@ -446,7 +488,7 @@
                 </sizepolicy>
                </property>
                <property name="toolTip">
-                <string comment="Copy screenshots to the Steam directory of respective game. This action can be repeated for multiple games."/>
+                <string>Copy screenshots to the Steam directory of respective game. This action can be repeated for multiple games.</string>
                </property>
                <property name="text">
                 <string>Copy screenshots to game directory</string>
@@ -476,6 +518,9 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>You can add single screenshots or the whole sets.</string>
                </property>
                <property name="text">
                 <string>Add screenshots to queue...</string>
@@ -745,19 +790,6 @@
        </layout>
       </item>
      </layout>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
     </item>
    </layout>
   </widget>

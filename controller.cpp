@@ -1,6 +1,5 @@
 #include "controller.h"
 
-
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
@@ -28,6 +27,8 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QtMath>
+#include <QVersionNumber>
+#include <QDebug>
 
 
 Controller::Controller(QObject *parent) : QObject(parent)
@@ -56,6 +57,8 @@ void Controller::bootStrap()
     }
 
     readSettings(); // read settings from the file, if any
+    if ( offerUpdateSetting != "Never" )
+        checkForUpdates();
 
     if ( !screenshotPathsPool.isEmpty() ) {
         populateScreenshotQueue(screenshotPathsPool);
@@ -92,6 +95,10 @@ void Controller::readSettings()
     settings->beginGroup("Screenshots");
         screenshotPathsPool = settings->value("Queue").toStringList();
     settings->endGroup();
+
+    settings->beginGroup("Update");
+        offerUpdateSetting = settings->value("Offer").toString();
+    settings->endGroup();
 }
 
 
@@ -113,6 +120,44 @@ void Controller::writeSettings(QSize size, QPoint pos, QString userID, QString g
 
     settings->beginGroup("Screenshots");
        settings->setValue("Queue", screenshotPathsPool);
+    settings->endGroup();
+}
+
+
+void Controller::checkForUpdates()
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QObject::connect(nam, &QNetworkAccessManager::finished,
+                     this, &Controller::handleUpdate);
+    nam->get(QNetworkRequest(QUrl("https://steascree.download/latest/")));
+}
+
+
+void Controller::handleUpdate(QNetworkReply *reply)
+{
+    if ( reply->error() == QNetworkReply::NoError ) {
+
+        QByteArray raw = reply->readAll();
+        QJsonDocument doc(QJsonDocument::fromJson(raw));
+        QJsonObject obj = doc.object();
+
+        QString appVersion = QCoreApplication::applicationVersion();
+        QString latestVersion = obj.value("version").toString();
+        QVersionNumber appVersionNumber = QVersionNumber::fromString(appVersion);
+        QVersionNumber latestVersionNumber = QVersionNumber::fromString(latestVersion);
+
+        if (QVersionNumber::compare(latestVersionNumber, appVersionNumber) > 0) {
+            QString link = obj.value(os.toLower()).toString();
+            emit sendUpdateInfo(latestVersion, link);
+        }
+    }
+}
+
+
+void Controller::writeSettingNeverOfferUpdate()
+{
+    settings->beginGroup("Update");
+        settings->setValue("Offer", "Never");
     settings->endGroup();
 }
 
@@ -741,13 +786,6 @@ QString Controller::convertSlashes(QString str)
 }
 
 
-void Controller::returnVDFStatus()
-{
-    if ( vdfPaths.isEmpty() )
-        emit sendVDFStatus(QDir(steamDir + "/userdata").exists(), vdfFilename);
-}
-
-
 void Controller::returnLinesState()
 {
     emit sendLinesState(addedLines);
@@ -798,4 +836,3 @@ void Controller::setSelectedIDs(QString userID, QString gameID)
     selectedUserID = userID;
     selectedGameID = gameID;
 }
-
