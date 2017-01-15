@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QMovie>
+#include <QComboBox>
 
 
 namespace Ui {
@@ -31,6 +32,8 @@ protected:
 private:
     Ui::MainWindow *ui;
     QMovie *gifLoader = new QMovie("://res/misc/loader.gif");
+    QComboBox *userIDComboBox;
+
     void makeWideMessageBox(QMessageBox *msgBox, quint32 width);
     void disableAllControls();
 
@@ -48,10 +51,11 @@ signals:
     void clearCopyingStatusLabels();
     void writeVDF();
     void getVDFStatus();
-    void sendSettings(QSize size, QPoint pos, QString userID, QString gameID);
+    void sendSettings(QSize size, QPoint pos, QString userID, QString userIDComboBox);
     void sendComboBoxUserIDCurrentText(QString text);
     void sendScreenshotsSelected(QStringList screenshotsSelected);
     void sendNeverOfferUpdate();
+    void sendNewlySelectedUserID(QString userID);
 
 
 public slots:
@@ -66,11 +70,11 @@ public slots:
     void setLabelsCleared(QStringList list);
     void insertIntoComboBox(QString name, QStringList items);
     void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
-    void returnComboBoxUserIDCurrentText();
+//    void returnComboBoxUserIDCurrentText();
     void returnScreenshotsSelected(QString lastSelectedScreenshotDir);
     void setProgressBarValue(quint32 value);
     void deleteCopiedWidgetItem(QString path);
-    void setIndexOfComboBoxGameID(QString lastSelectedGameID);
+    void setIndexOfComboBox(QString name, QString text);
     void setLabelsText(QStringList list, QString text);
     void setLabelsVisible(QStringList list, bool visible);
     void setStatusLabelText(QString text, QString color);
@@ -84,6 +88,7 @@ private slots:
     void on_pushButton_copyScreenshots_clicked();
     void on_pushButton_prepare_clicked();
     void on_pushButton_locateSteamDir_clicked();
+    void reactToComboBoxActivation(QString userID);
 };
 
 #endif // MAINWINDOW_H

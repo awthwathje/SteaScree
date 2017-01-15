@@ -38,7 +38,6 @@ private:
     QStringList vdfPaths;
     QString userID;
     QString someID;
-    QStringList gameIDs;
     QHash<QString, QString> games;
     QStringList screenshotPathsPool;
     QStringList lines;
@@ -73,6 +72,7 @@ private:
     void saveThumbnail(QString filename, QImage image, quint32 width, quint32 height);
     void checkForUpdates();
     QString getPersonalNameByUserID(QString userID);
+    void getShortcutNames();
 
 
 signals:
@@ -89,12 +89,11 @@ signals:
     void sendLabelsVisible(QStringList list, bool visible);
     void sendComboBoxesCleared(QStringList list);
     void sendLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
-    void getComboBoxUserIDCurrentText();
     void sendLastSelectedScreenshotDir(QString lastSelectedScreenshotDir);
     void sendProgressBarValue(quint32 value);
     void deleteCopiedWidgetItem(QString path);
     void sendToComboBox(QString name, QStringList items);
-    void sendIndexOfComboBoxGameID(QString lastSelectedGameID);
+    void sendIndexOfComboBox(QString name, QString text);
     void sendLabelsText(QStringList list, QString text);
     void sendScreenshotList(QList<Screenshot> screenshotList, QPoint center, QStringList steamLimits);
     void sendStatusLabelText(QString text, QString color);
@@ -119,9 +118,9 @@ public slots:
     void clearCopyingStatusLabels();
     void setSelectedUserID(QString text);
     void addScreenshotsToPool(QStringList screenshotsSelected);
-    void setSelectedIDs(QString userID, QString gameID);
     void prepareScreenshotListWithDecisions(QList<Screenshot> screenshotList);
     void writeSettingNeverOfferUpdate();
+    void fillGameIDs(QString userIDCombined);
 
 
 private slots:

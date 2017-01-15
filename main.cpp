@@ -110,15 +110,11 @@ int main(int argc, char *argv[])
     QObject::connect(&c, &Controller::sendToComboBox,
                      &w, &MainWindow::insertIntoComboBox);
 
-    QObject::connect(&c, &Controller::sendIndexOfComboBoxGameID,
-                     &w, &MainWindow::setIndexOfComboBoxGameID);
+    QObject::connect(&c, &Controller::sendIndexOfComboBox,
+                     &w, &MainWindow::setIndexOfComboBox);
 
     QObject::connect(&c, &Controller::sendLabelsOnMissingStuff,
                      &w, &MainWindow::setLabelsOnMissingStuff);
-
-    QObject::connect(&c, &Controller::getComboBoxUserIDCurrentText,
-                     &w, &MainWindow::returnComboBoxUserIDCurrentText,
-                     Qt::DirectConnection);
 
     QObject::connect(&w, &MainWindow::sendComboBoxUserIDCurrentText,
                      &c, &Controller::setSelectedUserID);
@@ -137,6 +133,9 @@ int main(int argc, char *argv[])
 
     QObject::connect(&w, &MainWindow::sendNeverOfferUpdate,
                      &c, &Controller::writeSettingNeverOfferUpdate);
+
+    QObject::connect(&w, &MainWindow::sendNewlySelectedUserID,
+                     &c, &Controller::fillGameIDs);
 
     w.show();
     w.bootStrap();

@@ -169,7 +169,6 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
     vdfPaths.clear();                           // there may be multiple Steam installations in the system and thus multiple VDFs
     userID.clear();
     someID.clear();
-    gameIDs.clear();
 
     emit sendComboBoxesCleared( QStringList() << "comboBox_userID" << "comboBox_gameID");
 
@@ -205,12 +204,24 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
                 userIDsCombinedWithNames << userID + "/" + someID + personalName;
             }
 
+            if (!lastSelectedUserID.isEmpty()) {
+                userID = lastSelectedUserID;
+            } else {
+                userID = userIDsCombined[0];
+            }
+
             QStringList items;
             if ( isUnixLikeOS )
                 items = userIDsCombinedWithNames;
-            else
+            else {
                 items = userIDsCombinedWithNames.replaceInStrings("/", "\\");
+                userID = userID.replace("/", "\\");
+            }
+            selectedUserID = userID;
+
             emit sendToComboBox("comboBox_userID", items);
+
+            emit sendIndexOfComboBox("comboBox_userID", userID);
 
             emit sendToComboBox("comboBox_gameID", QStringList() << "loading...");
 
@@ -219,7 +230,7 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
             QObject::connect(nam, &QNetworkAccessManager::finished,
                              this, &Controller::getGameNames);
 
-            nam->get(QNetworkRequest(QUrl("http://api.steampowered.com/ISteamApps/GetAppList/v2")));
+            nam->get(QNetworkRequest(QUrl("http://api.steampowered.com/ISteamApps/GetAppList/v2")));                        
 
         } else
             emit sendLabelsOnMissingStuff(false, vdfFilename);
@@ -264,7 +275,7 @@ QString Controller::getPersonalNameByUserID(QString userID)
 
 
 void Controller::getGameNames(QNetworkReply *reply)
-{
+{   
     if ( games.isEmpty() ) {
         
         if ( reply->error() == QNetworkReply::NoError ) {
@@ -280,33 +291,18 @@ void Controller::getGameNames(QNetworkReply *reply)
                 games[appID] = name;
             }
         }
-
-        emit getComboBoxUserIDCurrentText();
-
-        QStringList lines = readVDF();
-        qint32 shortcutNamesHeaderPos = lines.indexOf("\t\"shortcutnames\"");       // if there are any non-Steam games, get names for them too, from the VDF
-        qint32 shortcutNamesEndPos = lines.indexOf("\t}", shortcutNamesHeaderPos);
-        QStringList shortcutNamesSection = lines.mid(shortcutNamesHeaderPos, shortcutNamesEndPos - shortcutNamesHeaderPos);
-        QRegularExpression re("^\t\t\"[0-9]+\"\t\t\".+\"$");
-
-        if ( shortcutNamesSection.indexOf(re) != -1 ) {
-
-            qint32 entryPos = 0;
-
-            while ( (entryPos <= shortcutNamesSection.length() - 1) && (entryPos != -1) ) {
-
-                entryPos = shortcutNamesSection.indexOf(re, entryPos + 1);
-
-                if ( entryPos != -1 ) {
-                    QString gameID = shortcutNamesSection[entryPos].section("\t\t", 1, 1).remove(QRegularExpression("(^\")|(\"$)"));
-                    QString gameName = shortcutNamesSection[entryPos].section("\t\t", 2, 2).remove(QRegularExpression("(^\")|(\"$)"));
-                    games[gameID] = gameName;
-                }
-            }
-        }
     }
 
-    QDirIterator i(userDataDir + "/" + userID + "/" + someID + "/remote", QDir::Dirs | QDir::NoDotAndDotDot);
+    fillGameIDs(userID);
+}
+
+
+void Controller::fillGameIDs(QString userIDCombined)
+{
+    getShortcutNames();
+    QStringList gameIDs;
+
+    QDirIterator i(userDataDir + "/" + userIDCombined + "/" + "/remote", QDir::Dirs | QDir::NoDotAndDotDot);
     while ( i.hasNext() ) {
 
         QString gameID = i.next().section('/', -1);
@@ -315,18 +311,43 @@ void Controller::getGameNames(QNetworkReply *reply)
             gameIDs << gameID + " <" + games[gameID] + ">";
         else
             gameIDs << gameID;
-
     }
 
-    emit sendComboBoxesCleared( QStringList() << "comboBox_gameID" );
+    emit sendComboBoxesCleared(QStringList() << "comboBox_gameID");
 
     if ( !gameIDs.isEmpty() )
         emit sendToComboBox("comboBox_gameID", gameIDs);
 
     if ( !lastSelectedGameID.isEmpty() )
-        emit sendIndexOfComboBoxGameID(lastSelectedGameID);
+        emit sendIndexOfComboBox("comboBox_gameID", lastSelectedGameID);
 
-    emit sendWidgetsDisabled( QStringList() << "pushButton_addScreenshots", false);
+    emit sendWidgetsDisabled(QStringList() << "pushButton_addScreenshots", false);
+}
+
+
+void Controller::getShortcutNames()
+{
+    QStringList lines = readVDF();
+    qint32 shortcutNamesHeaderPos = lines.indexOf("\t\"shortcutnames\"");       // if there are any non-Steam games, get names for them too, from the VDF
+    qint32 shortcutNamesEndPos = lines.indexOf("\t}", shortcutNamesHeaderPos);
+    QStringList shortcutNamesSection = lines.mid(shortcutNamesHeaderPos, shortcutNamesEndPos - shortcutNamesHeaderPos);
+    QRegularExpression re("^\t\t\"[0-9]+\"\t\t\".+\"$");
+
+    if ( shortcutNamesSection.indexOf(re) != -1 ) {
+
+        qint32 entryPos = 0;
+
+        while ( (entryPos <= shortcutNamesSection.length() - 1) && (entryPos != -1) ) {
+
+            entryPos = shortcutNamesSection.indexOf(re, entryPos + 1);
+
+            if ( entryPos != -1 ) {
+                QString gameID = shortcutNamesSection[entryPos].section("\t\t", 1, 1).remove(QRegularExpression("(^\")|(\"$)"));
+                QString gameName = shortcutNamesSection[entryPos].section("\t\t", 2, 2).remove(QRegularExpression("(^\")|(\"$)"));
+                games[gameID] = gameName;
+            }
+        }
+    }
 }
 
 
@@ -865,11 +886,4 @@ void Controller::returnScreenshotPathPoolLength()
 void Controller::returnSteamDir()
 {
     emit sendSteamDir(steamDir);
-}
-
-
-void Controller::setSelectedIDs(QString userID, QString gameID)
-{
-    selectedUserID = userID;
-    selectedGameID = gameID;
 }

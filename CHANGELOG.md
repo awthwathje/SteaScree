@@ -1,5 +1,8 @@
 # SteaScree Changelog
 
+## 1.3.1
+* Well, seems like user switching never worked right. Now it does. Games listed in the combobox change on-the-fly when user ID get changed.
+
 ## 1.3.0
 * Personal name is now shown in the combobox alongside user ID. Useful when a computer is shared among a number of Steam users.
 

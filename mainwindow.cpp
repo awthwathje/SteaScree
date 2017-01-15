@@ -51,6 +51,16 @@ void MainWindow::bootStrap()
 
     emit sendButtonList(QList<QPushButton*>() << ui->pushButton_clearQueue << ui->pushButton_copyScreenshots    // buttons should have specific padding
                                               << ui->pushButton_addScreenshots << ui->pushButton_prepare);      // ...in each supported OS
+
+    userIDComboBox = ui->comboBox_userID;
+    QObject::connect(userIDComboBox, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
+                     this, &MainWindow::reactToComboBoxActivation);
+}
+
+
+void MainWindow::reactToComboBoxActivation(QString userID)
+{
+    emit sendNewlySelectedUserID(userID.remove(QRegularExpression(" <.+>$")));
 }
 
 
@@ -193,9 +203,10 @@ void MainWindow::insertIntoComboBox(QString name, QStringList items)
 }
 
 
-void MainWindow::setIndexOfComboBoxGameID(QString lastSelectedGameID)
+void MainWindow::setIndexOfComboBox(QString name, QString text)
 {
-    ui->comboBox_gameID->setCurrentIndex(ui->comboBox_gameID->findText(lastSelectedGameID, Qt::MatchStartsWith));
+    QComboBox *comboBox = this->findChild<QComboBox*>(name);
+    comboBox->setCurrentIndex(comboBox->findText(text, Qt::MatchStartsWith));
 }
 
 
@@ -209,12 +220,6 @@ void MainWindow::setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilena
 
     ui->label_steamDirValue->setText("not found");
     ui->label_steamDirValue->setStyleSheet("color: gray;");
-}
-
-
-void MainWindow::returnComboBoxUserIDCurrentText()
-{
-    emit sendComboBoxUserIDCurrentText(ui->comboBox_userID->currentText());
 }
 
 
@@ -370,7 +375,7 @@ void MainWindow::on_pushButton_prepare_clicked()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     emit sendSettings(size(), pos(),
-                      ui->comboBox_userID->currentText(),
+                      ui->comboBox_userID->currentText().remove(QRegularExpression(" <.+>$")),
                       ui->comboBox_gameID->currentText().remove(QRegularExpression(" <.+>$")));
     event->accept();
 }
