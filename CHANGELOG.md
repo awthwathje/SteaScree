@@ -9,7 +9,6 @@
 ## 1.2.0
 * Added check for an updated version. There is an option to never offer updates.
 * Tooltips.
-* Since this release, Windows installer available from the official site (https://steascree.download) is 64-bit only. However, 32-bit binaries can be easily compiled from the source code.
 * Minor UI improvement.
 
 ## 1.1.0

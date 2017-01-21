@@ -70,7 +70,6 @@ public slots:
     void setLabelsCleared(QStringList list);
     void insertIntoComboBox(QString name, QStringList items);
     void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
-//    void returnComboBoxUserIDCurrentText();
     void returnScreenshotsSelected(QString lastSelectedScreenshotDir);
     void setProgressBarValue(quint32 value);
     void deleteCopiedWidgetItem(QString path);
