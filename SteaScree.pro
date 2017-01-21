@@ -1,6 +1,4 @@
-QT          +=  core gui network
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT          +=  core gui network widgets
 
 TARGET      =   SteaScree
 
@@ -8,14 +6,25 @@ TEMPLATE    =   app
 
 SOURCES     +=  main.cpp\
                 mainwindow.cpp \
-                model.cpp
+                controller.cpp \
+                largefiledialog.cpp \
+                interfaceadjuster.cpp
 
 HEADERS     +=  mainwindow.h \
-                model.h
+                controller.h \
+                largefiledialog.h \
+                interfaceadjuster.h \
+                screenshot.h
 
-FORMS       +=  mainwindow.ui
+FORMS       +=  mainwindow.ui \
+                largefiledialog.ui
 
-VERSION     =   1.0.5.0
+RESOURCES   +=  \
+                images.qrc
+
+VERSION     =   1.3.1
+
+DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
 macx:ICON   =   res/icons/SteaScree.icns
 

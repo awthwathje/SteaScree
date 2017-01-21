@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 #include <QTreeWidgetItem>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QMovie>
+#include <QComboBox>
 
 
 namespace Ui {
@@ -14,6 +18,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -21,64 +26,68 @@ public:
 
 
 protected:
-    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 
 private:
     Ui::MainWindow *ui;
-    void toggleLabelInfo(bool isVisible);
+    QMovie *gifLoader = new QMovie("://res/misc/loader.gif");
+    QComboBox *userIDComboBox;
+
+    void makeWideMessageBox(QMessageBox *msgBox, quint32 width);
+    void disableAllControls();
 
 
 signals:
-    void getOS();
-    void pushButtonAddScreenshots_clicked();
-    void pushButtonPrepare_clicked();
+    void sendButtonList(QList<QPushButton*> buttonList);
+    void pushButton_addScreenshots_clicked();
+    void pushButton_prepare_clicked();
     void clearScreenshotPathsPool();
+    void clearState();
     void getScreenshotPathsPoolLength();
-    void pushScreenshots(QString selectedUserID, QString selectedGameID);
+    void sendSelectedIDs(QString selectedUserID, QString selectedGameID, MainWindow *mainWindow);
     void getSteamDir();
-    void setUserDataPaths(QString steamDir);
+    void sendUserDataPaths(QString steamDir);
     void clearCopyingStatusLabels();
     void writeVDF();
     void getVDFStatus();
-    void sendSettings(QSize size, QPoint pos, QString userID, QString gameID);
+    void sendSettings(QSize size, QPoint pos, QString userID, QString userIDComboBox);
     void sendComboBoxUserIDCurrentText(QString text);
     void sendScreenshotsSelected(QStringList screenshotsSelected);
+    void sendNeverOfferUpdate();
+    void sendNewlySelectedUserID(QString userID);
 
 
 public slots:
-    void setButtonPadding(QString os);
     void addWidgetItemToScreenshotList(QTreeWidgetItem *item);
     void resizeScreenshotListColumns();
     void setWidgetsDisabled(QStringList list, bool disable);
-    void setVisibleProgressBar(int length);
+    void setProgressBarLength(quint32 length);
     void locateSteamDir(QString steamDir);
-    void prepareScreenshots(int addedLines);
-    void warnOnMissingVDF(bool userDataExists, QString vdfFilename);
+    void prepareScreenshots(quint32 addedLines);
     void moveWindow(QSize geometry, QPoint moveToPoint);
-    void setLabelStatusErrorVisible(bool visible);
     void setComboBoxesCleared(QStringList list);
+    void setLabelsCleared(QStringList list);
     void insertIntoComboBox(QString name, QStringList items);
-    void setIndexOfComboBoxUserID(QString item);
     void setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename);
-    void returnComboBoxUserIDCurrentText();
     void returnScreenshotsSelected(QString lastSelectedScreenshotDir);
-    void setProgressBarValue(int value);
+    void setProgressBarValue(quint32 value);
     void deleteCopiedWidgetItem(QString path);
-    void setIndexOfComboBoxGameID(QString lastSelectedGameID);
+    void setIndexOfComboBox(QString name, QString text);
     void setLabelsText(QStringList list, QString text);
+    void setLabelsVisible(QStringList list, bool visible);
+    void setStatusLabelText(QString text, QString color);
+    void setDirStatusLabelsVisible(bool visible);
+    void offerUpdate(QString version, QString link);
 
 
 private slots:
-    void on_pushButtonAddScreenshots_clicked();
-    void on_pushButtonClearQueue_clicked();
-    void on_pushButtonCopyScreenshots_clicked();
-    void on_pushButtonPrepare_clicked();
-    void on_pushButtonLocateSteamDir_clicked();
-    void checkVDF();
-
-
+    void on_pushButton_addScreenshots_clicked();
+    void on_pushButton_clearQueue_clicked();
+    void on_pushButton_copyScreenshots_clicked();
+    void on_pushButton_prepare_clicked();
+    void on_pushButton_locateSteamDir_clicked();
+    void reactToComboBoxActivation(QString userID);
 };
 
 #endif // MAINWINDOW_H

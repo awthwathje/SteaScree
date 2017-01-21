@@ -14,6 +14,9 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QCloseEvent>
+#include <QCheckBox>
+#include <QMovie>
+#include <QDesktopServices>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -34,77 +37,50 @@ MainWindow::~MainWindow()
 
 void MainWindow::bootStrap()
 {
-    ui->progressBarScreenshotsUploading->setVisible(false); // initial widget states setting
-    ui->labelStatusError->setVisible(false);
-    setWidgetsDisabled(QStringList() << "pushButtonClearQueue" << "pushButtonCopyScreenshots" << "pushButtonPrepare", true);
+    setLabelsVisible(QStringList() << "label_status" << "progressBar_status" << "label_progress", false);              // initial widget states setting
+    setWidgetsDisabled(QStringList() << "pushButton_clearQueue" << "pushButton_copyScreenshots" << "pushButton_prepare", true);
+    setDirStatusLabelsVisible(false);
 
-    QSizePolicy sp_retain = ui->labelInfoScreenshots->sizePolicy(); // hack to prevent layout size change on a widget visibility changing events
-    sp_retain.setRetainSizeWhenHidden(true);
-    ui->labelInfoScreenshots->setSizePolicy(sp_retain);
-    ui->progressBarScreenshotsUploading->setSizePolicy(sp_retain);
+    ui->label_progress->setMovie(gifLoader);
+    gifLoader->start();
 
-    toggleLabelInfo(false); // information labels are hidden at start
+    QSizePolicy spRetain = ui->label_infoScreenshots->sizePolicy();     // hack to prevent layout size change on a widget visibility changing events
+    spRetain.setRetainSizeWhenHidden(true);
+    ui->label_infoScreenshots->setSizePolicy(spRetain);
+    ui->progressBar_status->setSizePolicy(spRetain);
 
-    emit getOS();
+    emit sendButtonList(QList<QPushButton*>() << ui->pushButton_clearQueue << ui->pushButton_copyScreenshots    // buttons should have specific padding
+                                              << ui->pushButton_addScreenshots << ui->pushButton_prepare);      // ...in each supported OS
+
+    userIDComboBox = ui->comboBox_userID;
+    QObject::connect(userIDComboBox, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
+                     this, &MainWindow::reactToComboBoxActivation);
 }
 
 
-void MainWindow::setButtonPadding(QString os)
+void MainWindow::reactToComboBoxActivation(QString userID)
 {
-    QList<QPushButton*> buttonList; // list of buttons for setting a different padding for each OS
-    buttonList << ui->pushButtonClearQueue << ui->pushButtonCopyScreenshots << ui->pushButtonAddScreenshots << ui->pushButtonPrepare;
-
-    if (os == "Linux")
-        foreach (QPushButton *button, buttonList)
-            button->setStyleSheet("padding: 3px 13px");
-    else if (os == "Windows")
-        foreach (QPushButton *button, buttonList)
-            button->setStyleSheet("padding: 4px 14px");
-}
-
-
-void MainWindow::checkVDF()
-{
-    emit getVDFStatus();
-}
-
-
-void MainWindow::toggleLabelInfo(bool isVisible) // info labels show/hide toggle
-{
-    QList<QLabel*> labelInfoList;
-    labelInfoList << ui->labelInfoScreenshots << ui->labelInfo1 << ui->labelInfo2 << ui->labelInfoDirectories;
-    foreach (QLabel *label, labelInfoList)
-        label->setVisible(isVisible);
+    emit sendNewlySelectedUserID(userID.remove(QRegularExpression(" <.+>$")));
 }
 
 
 void MainWindow::addWidgetItemToScreenshotList(QTreeWidgetItem *item)
 {
-    ui->treeWidgetScreenshotList->addTopLevelItem(item);
+    ui->treeWidget_screenshotList->addTopLevelItem(item);
 }
 
 
 void MainWindow::resizeScreenshotListColumns()
 {
-    ui->treeWidgetScreenshotList->resizeColumnToContents(0); // after all has been added, resize columns for a better appearance
-    ui->treeWidgetScreenshotList->resizeColumnToContents(1);
+    ui->treeWidget_screenshotList->resizeColumnToContents(0); // after all has been added, resize columns for a better appearance
+    ui->treeWidget_screenshotList->resizeColumnToContents(1);
 }
 
 
-void MainWindow::warnOnMissingVDF(bool userDataExists, QString vdfFilename)
+void MainWindow::makeWideMessageBox(QMessageBox *msgBox, quint32 width) // hack to make wide message boxes
 {
-    QMessageBox msgBox(this);
-    msgBox.setIcon(QMessageBox::Warning);
-
-    if ( !userDataExists ) {
-        msgBox.setText("SteaScree has been unable to find a Steam userdata directory in the current location.");
-        msgBox.setInformativeText("Please choose an existing Steam directory.");
-    } else {
-        msgBox.setText("Steam userdata directory is found, but there is no " + vdfFilename);
-        msgBox.setInformativeText("Please start Steam, make some screenshots with it and try again.");
-    };
-
-    msgBox.exec();
+    QGridLayout* layout = (QGridLayout*)msgBox->layout();
+    layout->addItem(new QSpacerItem(width, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), layout->rowCount(), 0, 1, layout->columnCount());
 }
 
 
@@ -117,8 +93,30 @@ void MainWindow::locateSteamDir(QString steamDir)
     if ( !steamDirLocated.isEmpty() ) {
 
         steamDirLocated.remove(QRegularExpression("/userdata$"));
-        emit setUserDataPaths(steamDirLocated);
-    };
+        emit sendUserDataPaths(steamDirLocated);
+    }
+}
+
+
+void MainWindow::offerUpdate(QString version, QString link)
+{
+    QMessageBox msgBox(this);
+    msgBox.setIcon(QMessageBox::Question);
+    QString text = "New version available.";
+    QString info = "SteaScree version " + version + " is available online. Would you like to download it?";
+    msgBox.setText(text);
+    msgBox.setInformativeText(info);
+    QPushButton *never = msgBox.addButton("Never", QMessageBox::RejectRole);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+
+    makeWideMessageBox(&msgBox, 400);
+    int ret = msgBox.exec();
+
+    if ( ret == QMessageBox::Yes )
+        QDesktopServices::openUrl(QUrl(link));
+    else if ( msgBox.clickedButton() == never )
+        emit sendNeverOfferUpdate();
 }
 
 
@@ -129,8 +127,9 @@ void MainWindow::setLabelsText(QStringList list, QString text)
         QString current = i.next();
         QLabel *label = this->findChild<QLabel*>(current);
         label->setText(text);
-    };
+    }
 }
+
 
 void MainWindow::setWidgetsDisabled(QStringList list, bool disable)
 {
@@ -139,7 +138,26 @@ void MainWindow::setWidgetsDisabled(QStringList list, bool disable)
         QString current = i.next();
         QWidget *widget = this->findChild<QWidget*>(current);
         widget->setDisabled(disable);
-    };
+    }
+}
+
+
+void MainWindow::setLabelsVisible(QStringList list, bool visible)
+{
+    QStringListIterator i(list);
+    while ( i.hasNext() ) {
+        QString current = i.next();
+        QWidget *widget = this->findChild<QWidget*>(current);
+        widget->setVisible(visible);
+    }
+}
+
+
+void MainWindow::setDirStatusLabelsVisible(bool visible) // info labels show/hide toggle
+{
+    QStringList labelInfoList = QStringList() << "label_infoScreenshots" << "label_infoScreenshotsCopied"
+                                              << "label_infoDirectories" << "label_infoDirectoriesCopied";
+    setLabelsVisible(labelInfoList, visible);
 }
 
 
@@ -150,21 +168,24 @@ void MainWindow::setComboBoxesCleared(QStringList list)
         QString current = i.next();
         QComboBox *widget = this->findChild<QComboBox*>(current);
         widget->clear();
-    };
+    }
 }
 
 
-void MainWindow::setVisibleProgressBar(int length)
+void MainWindow::setLabelsCleared(QStringList list)
 {
-    ui->progressBarScreenshotsUploading->setVisible(true);
-    ui->progressBarScreenshotsUploading->setMinimum(0);
-    ui->progressBarScreenshotsUploading->setMaximum(length);
+    QStringListIterator i(list);
+    while ( i.hasNext() ) {
+        QString current = i.next();
+        QLabel *label = this->findChild<QLabel*>(current);
+        label->clear();
+    }
 }
 
 
-void MainWindow::setLabelStatusErrorVisible(bool visible)
+void MainWindow::setProgressBarLength(quint32 length)
 {
-    ui->labelStatusError->setVisible(visible);
+    ui->progressBar_status->setMaximum(length);
 }
 
 
@@ -182,34 +203,23 @@ void MainWindow::insertIntoComboBox(QString name, QStringList items)
 }
 
 
-void MainWindow::setIndexOfComboBoxUserID(QString item)
+void MainWindow::setIndexOfComboBox(QString name, QString text)
 {
-    ui->comboBoxUserID->setCurrentIndex(ui->comboBoxUserID->findText(item));
-}
-
-
-void MainWindow::setIndexOfComboBoxGameID(QString lastSelectedGameID)
-{
-    ui->comboBoxGameID->setCurrentIndex(ui->comboBoxGameID->findText(lastSelectedGameID, Qt::MatchStartsWith));
+    QComboBox *comboBox = this->findChild<QComboBox*>(name);
+    comboBox->setCurrentIndex(comboBox->findText(text, Qt::MatchStartsWith));
 }
 
 
 void MainWindow::setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilename)
 {
-    ui->labelStatusError->setVisible(true);
+    ui->label_status->setVisible(true);
     if ( userDataMissing )
-        ui->labelStatusError->setText("Steam userdata directory is missing. Please locate correct Steam directory.");
+        setStatusLabelText("Steam executable is found, but there is no userdata directory", "#ab4e52");
     else
-        ui->labelStatusError->setText("Steam userdata directory is found, but " + vdfFilename + " is missing.");
+        setStatusLabelText("Steam userdata directory is found, but " + vdfFilename + " is missing", "#ab4e52");
 
-    ui->labelSteamDirValue->setText("not found");
-    ui->labelSteamDirValue->setStyleSheet("color: gray;");
-}
-
-
-void MainWindow::returnComboBoxUserIDCurrentText()
-{
-    emit sendComboBoxUserIDCurrentText(ui->comboBoxUserID->currentText());
+    ui->label_steamDirValue->setText("not found");
+    ui->label_steamDirValue->setStyleSheet("color: gray;");
 }
 
 
@@ -223,22 +233,38 @@ void MainWindow::returnScreenshotsSelected(QString lastSelectedScreenshotDir)
 }
 
 
-void MainWindow::setProgressBarValue(int value)
+void MainWindow::setProgressBarValue(quint32 value)
 {
-   ui->progressBarScreenshotsUploading->setValue(value);
+   ui->progressBar_status->setValue(value);
 }
 
 
 void MainWindow::deleteCopiedWidgetItem(QString path)
 {
     QFile file(path);
-    QTreeWidgetItem *item = ui->treeWidgetScreenshotList->findItems(QFileInfo(file).lastModified()
+    QTreeWidgetItem *item = ui->treeWidget_screenshotList->findItems(QFileInfo(file).lastModified()
                                                                     .toString("yyyy/MM/dd hh:mm:ss"), Qt::MatchExactly, 1)[0];
     delete item;
 }
 
 
-void MainWindow::prepareScreenshots(int addedLines)
+void MainWindow::disableAllControls()
+{
+    setWidgetsDisabled(QStringList() << "pushButton_clearQueue" << "pushButton_addScreenshots" << "pushButton_copyScreenshots"
+                                     << "pushButton_locateSteamDir" << "comboBox_userID" << "comboBox_gameID" << "pushButton_prepare", true);
+}
+
+
+void MainWindow::setStatusLabelText(QString text, QString color)
+{
+    ui->label_status->setText(text);
+    if ( color.isEmpty() )
+        color = "black";
+    ui->label_status->setStyleSheet("QLabel {color: " + color + "};");
+}
+
+
+void MainWindow::prepareScreenshots(quint32 addedLines)
 {
     if ( addedLines > 0 ) {
 
@@ -253,27 +279,27 @@ void MainWindow::prepareScreenshots(int addedLines)
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::Yes);
 
-        QGridLayout* layout = (QGridLayout*)msgBox.layout(); // hack to make wide message boxes
-        layout->addItem(new QSpacerItem(500, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), layout->rowCount(), 0, 1, layout->columnCount());
+        makeWideMessageBox(&msgBox, 500);
 
         int ret = msgBox.exec();
 
         if ( ret == QMessageBox::Yes ) {
 
-            toggleLabelInfo(false);
-            setLabelsText(QStringList() << "labelInfoScreenshots" << "labelInfoDirectories", "0");
-            emit clearScreenshotPathsPool();
-
-            ui->pushButtonPrepare->setDisabled(true);
+            setDirStatusLabelsVisible(false);
+            setLabelsText(QStringList() << "label_infoScreenshots" << "label_infoDirectories", "0");
+            ui->pushButton_prepare->setDisabled(true);
 
             emit writeVDF();
+
+            emit clearScreenshotPathsPool();
+            emit clearState();
 
             QMessageBox msgBox(this);
             msgBox.setIcon(QMessageBox::Information);
             msgBox.setText("SteaScree has updated the VDF-file.");
             msgBox.setInformativeText("Now you can start Steam as usual and upload screenshots to the Steam Cloud.");
             msgBox.exec();
-        };
+        }
 
     } else {
 
@@ -283,85 +309,73 @@ void MainWindow::prepareScreenshots(int addedLines)
         msgBox.setInformativeText("Nothing has been added. Please add new screenshots and try again.");
         msgBox.exec();
 
-        toggleLabelInfo(false);
-        ui->pushButtonPrepare->setDisabled(true);
-    };
+        setDirStatusLabelsVisible(false);
+        ui->pushButton_prepare->setDisabled(true);
+    }
 
     emit clearCopyingStatusLabels();
 }
 
 
-void MainWindow::on_pushButtonLocateSteamDir_clicked()
+void MainWindow::on_pushButton_locateSteamDir_clicked()
 {
     emit getSteamDir();
 }
 
 
-void MainWindow::on_pushButtonAddScreenshots_clicked()
+void MainWindow::on_pushButton_addScreenshots_clicked()
 {
-    emit pushButtonAddScreenshots_clicked();
+    emit pushButton_addScreenshots_clicked();
 }
 
 
-void MainWindow::on_pushButtonClearQueue_clicked()
+void MainWindow::on_pushButton_clearQueue_clicked()
 {
-    ui->treeWidgetScreenshotList->clear();
+    ui->treeWidget_screenshotList->clear();
 
-    setWidgetsDisabled(QStringList() << "pushButtonClearQueue" << "pushButtonCopyScreenshots", true);
+    setWidgetsDisabled(QStringList() << "pushButton_clearQueue" << "pushButton_copyScreenshots", true);
 
-    setWidgetsDisabled(QStringList() << "labelUserID" << "comboBoxGameID" << "labelGameID"
-                       << "comboBoxUserID" << "pushButtonLocateSteamDir", false);
+    setWidgetsDisabled(QStringList() << "label_userID" << "comboBox_gameID" << "label_gameID"
+                       << "comboBox_userID" << "pushButton_locateSteamDir", false);
 
     emit clearScreenshotPathsPool();
 }
 
 
-void MainWindow::on_pushButtonCopyScreenshots_clicked()
+void MainWindow::on_pushButton_copyScreenshots_clicked()
 {
-    QString selectedUserID = ui->comboBoxUserID->currentText();
-    QString selectedGameID = ui->comboBoxGameID->currentText();
+    QString selectedUserID = ui->comboBox_userID->currentText();
+    QString selectedGameID = ui->comboBox_gameID->currentText();
 
     QRegularExpression re("^[0-9]+( <.+>)?$");
 
     if ( !selectedGameID.contains(re) )
+        setStatusLabelText("invalid game ID, only numbers allowed", "#ab4e52");
+    else {  // valid game ID
 
-        ui->labelStatusError->setText("Invalid Game ID, only numbers allowed");
+        disableAllControls();
+        ui->label_status->clear();
+        setLabelsVisible(QStringList() << "label_status" << "label_progress" << "progressBar_status", true);
+        setWidgetsDisabled( QStringList() << "pushButton_addScreenshots" << "pushButton_locateSteamDir", true);
+        setStatusLabelText("analyzing queued screenshots", "");
+        ui->progressBar_status->setValue(0);
 
-    else {
-
-        ui->labelStatusError->clear();
-
-        emit getScreenshotPathsPoolLength();
-        setWidgetsDisabled( QStringList() << "pushButtonClearQueue" << "pushButtonAddScreenshots" << "pushButtonCopyScreenshots", true );
-        toggleLabelInfo(true);
-        emit pushScreenshots(selectedUserID, selectedGameID);
-        setWidgetsDisabled( QStringList() << "pushButtonAddScreenshots" << "pushButtonPrepare", false);
-        ui->pushButtonLocateSteamDir->setDisabled(true);
-        ui->progressBarScreenshotsUploading->setVisible(false);
-        ui->progressBarScreenshotsUploading->reset();
-        ui->treeWidgetScreenshotList->clear();
-        emit clearScreenshotPathsPool();
-    };
+        emit sendSelectedIDs(selectedUserID, selectedGameID, this);
+    }
 }
 
 
-void MainWindow::on_pushButtonPrepare_clicked()
+void MainWindow::on_pushButton_prepare_clicked()
 {
-    emit pushButtonPrepare_clicked();
-}
-
-
-void MainWindow::showEvent(QShowEvent *event) // hack to show message boxes only after the main window is shown
-{
-    QMainWindow::showEvent(event);
-    QTimer::singleShot(50, this, SLOT(checkVDF()));
+    emit pushButton_prepare_clicked();
+    ui->label_status->clear();
 }
 
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     emit sendSettings(size(), pos(),
-                      ui->comboBoxUserID->currentText(),
-                      ui->comboBoxGameID->currentText().remove(QRegularExpression(" <.+>$")));
+                      ui->comboBox_userID->currentText().remove(QRegularExpression(" <.+>$")),
+                      ui->comboBox_gameID->currentText().remove(QRegularExpression(" <.+>$")));
     event->accept();
 }
