@@ -8,7 +8,10 @@
 Q_DECLARE_METATYPE(Screenshot)
 
 
-// TODO: grag'n'drop screenshots
+// TODO: notify user when screenshot.vdf will not be modified for some reasons
+// TODO: fix the visible resize of the main window on app's start
+// TODO: design inconsitencies across platforms
+// TODO: drag'n'drop screenshots
 // TODO: UI in separate thread
 // TODO: multi-threading
 

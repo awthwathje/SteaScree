@@ -1,5 +1,8 @@
 # SteaScree Changelog
 
+## 1.3.2
+* Implemented check for the encoding process of incoming JPEG files. If it is a progressive, not baseline, pristine copy of file is saved to the filesystem. Otherwise, the file is internally processed by Qt, just like PNG and other supported formats. Closes issue #9.
+
 ## 1.3.1
 * Well, seems like user switching never worked right. Now it does. Games listed in the combobox change on-the-fly when user ID get changed.
 

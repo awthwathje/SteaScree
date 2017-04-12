@@ -10,6 +10,7 @@
 #include <QTreeWidgetItem>
 #include <QNetworkReply>
 #include <QPushButton>
+#include <QFile>
 
 
 class Controller : public QObject
@@ -73,6 +74,7 @@ private:
     void checkForUpdates();
     QString getPersonalNameByUserID(QString userID);
     void getShortcutNames();
+    QString getEncodingProcessOfJpeg(QFile *file);
 
 
 signals:
