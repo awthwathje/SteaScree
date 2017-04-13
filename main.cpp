@@ -119,9 +119,6 @@ int main(int argc, char *argv[])
     QObject::connect(&c, &Controller::sendLabelsOnMissingStuff,
                      &w, &MainWindow::setLabelsOnMissingStuff);
 
-    QObject::connect(&w, &MainWindow::sendComboBoxUserIDCurrentText,
-                     &c, &Controller::setSelectedUserID);
-
     QObject::connect(&c, &Controller::sendLabelsText,
                      &w, &MainWindow::setLabelsText);
 

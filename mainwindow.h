@@ -52,7 +52,6 @@ signals:
     void writeVDF();
     void getVDFStatus();
     void sendSettings(QSize size, QPoint pos, QString userID, QString userIDComboBox);
-    void sendComboBoxUserIDCurrentText(QString text);
     void sendScreenshotsSelected(QStringList screenshotsSelected);
     void sendNeverOfferUpdate();
     void sendNewlySelectedUserID(QString userID);

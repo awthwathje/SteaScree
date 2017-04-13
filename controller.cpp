@@ -246,14 +246,19 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 QString Controller::getPersonalNameByUserID(QString userID)
 {
     QStringList configFiles;
-    QDirIterator i(userDataDir + "/" + userID, QStringList() << "config.cfg", QDir::Files, QDirIterator::Subdirectories);
-    while ( i.hasNext() ) {
-        configFiles << i.next();
+
+    {
+        QDirIterator i(userDataDir + "/" + userID, QStringList() << "config.cfg", QDir::Files, QDirIterator::Subdirectories);
+        while ( i.hasNext() ) {
+            configFiles << i.next();
+        }
     }
 
-    if (configFiles.length() == 1) { // proceed only if there is one config.cfg per user
+    QListIterator<QString> i(configFiles);
+    while ( i.hasNext() ) {
+        QString current = i.next();
 
-        QFile vdf(configFiles[0]);
+        QFile vdf(current);
         vdf.open(QIODevice::ReadOnly | QIODevice::Text);
         QTextStream text(&vdf);
         QStringList lines;
@@ -666,8 +671,8 @@ void Controller::resizeAndSaveLargeScreenshot(Screenshot screenshot)
     quint32 height = screenshot.geometry[1];
 
     bool rectangular = true;
-    quint32 newWidth;
-    quint32 newHeight;
+    quint32 newWidth = 0;
+    quint32 newHeight = 0;
 
     if (width == height) {                                                      // square, large side
 
@@ -854,12 +859,6 @@ void Controller::getButtonList(QList<QPushButton*> buttonList)
 void Controller::removeEntryFromScreenshotPathsPool(QString entry)
 {
     screenshotPathsPool.removeOne(entry);
-}
-
-
-void Controller::setSelectedUserID(QString text)
-{
-    selectedUserID = text;
 }
 
 

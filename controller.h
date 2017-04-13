@@ -118,7 +118,6 @@ public slots:
     void writeVDF();
     void returnLinesState();
     void clearCopyingStatusLabels();
-    void setSelectedUserID(QString text);
     void addScreenshotsToPool(QStringList screenshotsSelected);
     void prepareScreenshotListWithDecisions(QList<Screenshot> screenshotList);
     void writeSettingNeverOfferUpdate();

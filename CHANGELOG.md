@@ -1,5 +1,9 @@
 # SteaScree Changelog
 
+## 1.3.3
+* Fixed a bug when personal names were not populated to the respective combobox, if there are multiple config.cfg files were found for a single user. This is completely normal, and now personal name ges extracted from the first found config. Typically, even if there are multiple configs, personal names in them are exactly the same.
+* Removed some unused methods.
+
 ## 1.3.2
 * Implemented check for the encoding process of incoming JPEG files. If it is a progressive, not baseline, pristine copy of file is saved to the filesystem. Otherwise, the file is internally processed by Qt, just like PNG and other supported formats. Closes issue #9.
 
