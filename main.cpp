@@ -1,17 +1,12 @@
-#include "mainwindow.h"
 #include "controller.h"
 #include "interfaceadjuster.h"
-#include "screenshot.h"
 
 #include <QApplication>
 
 Q_DECLARE_METATYPE(Screenshot)
 
 
-// TODO: notify user when screenshot.vdf will not be modified for some reasons
-// TODO: fix the visible resize of the main window on app's start
 // TODO: design inconsitencies across platforms
-// TODO: drag'n'drop screenshots
 // TODO: UI in separate thread
 // TODO: multi-threading
 
@@ -137,9 +132,12 @@ int main(int argc, char *argv[])
     QObject::connect(&w, &MainWindow::sendNewlySelectedUserID,
                      &c, &Controller::fillGameIDs);
 
-    w.show();
+    QObject::connect(&w, &MainWindow::sendTreeWidgetPointer,
+                     &c, &Controller::receiveTreeWidgetPointer);
+
     w.bootStrap();
     c.bootStrap();
+    w.show();
 
     return a.exec();
 }

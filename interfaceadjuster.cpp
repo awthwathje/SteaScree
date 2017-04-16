@@ -1,7 +1,7 @@
 #include "interfaceadjuster.h"
 
 
-InterfaceAdjuster::InterfaceAdjuster(QObject *parent) : QObject(parent) // cross-platform window optimizations
+InterfaceAdjuster::InterfaceAdjuster(QObject *parent) : QObject(parent) // window optimizations for different platforms
 {
 }
 

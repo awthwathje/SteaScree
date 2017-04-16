@@ -18,6 +18,8 @@
 #include <QMovie>
 #include <QDesktopServices>
 
+#include <QDebug>
+
 
 MainWindow::MainWindow(QWidget *parent) :
 
@@ -50,11 +52,14 @@ void MainWindow::bootStrap()
     ui->progressBar_status->setSizePolicy(spRetain);
 
     emit sendButtonList(QList<QPushButton*>() << ui->pushButton_clearQueue << ui->pushButton_copyScreenshots    // buttons should have specific padding
-                                              << ui->pushButton_addScreenshots << ui->pushButton_prepare);      // ...in each supported OS
+                        << ui->pushButton_addScreenshots << ui->pushButton_prepare);      // ...in each supported OS
 
     userIDComboBox = ui->comboBox_userID;
     QObject::connect(userIDComboBox, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
                      this, &MainWindow::reactToComboBoxActivation);
+
+    QTreeWidgetDragAndDrop *treeWidget = ui->treeWidget_screenshotList;
+    emit sendTreeWidgetPointer(treeWidget);
 }
 
 
@@ -87,9 +92,9 @@ void MainWindow::makeWideMessageBox(QMessageBox *msgBox, quint32 width) // hack 
 void MainWindow::locateSteamDir(QString steamDir)
 {
     QString steamDirLocated = QFileDialog::getExistingDirectory(this,
-                                                         "Locate Steam directory",
-                                                         steamDir,
-                                                         QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly);
+                                                                "Locate Steam directory",
+                                                                steamDir,
+                                                                QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly);
     if ( !steamDirLocated.isEmpty() ) {
 
         steamDirLocated.remove(QRegularExpression("/userdata$"));
@@ -214,7 +219,7 @@ void MainWindow::setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilena
 {
     ui->label_status->setVisible(true);
     if ( userDataMissing )
-        setStatusLabelText("Steam executable is found, but there is no userdata directory", "#ab4e52");
+        setStatusLabelText("Steam userdata directory is not found", "#ab4e52");
     else
         setStatusLabelText("Steam userdata directory is found, but " + vdfFilename + " is missing", "#ab4e52");
 
@@ -226,16 +231,16 @@ void MainWindow::setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilena
 void MainWindow::returnScreenshotsSelected(QString lastSelectedScreenshotDir)
 {
     QStringList screenshotsSelected = QFileDialog::getOpenFileNames(this,
-                                                            "Select one or more screenshots",
-                                                            lastSelectedScreenshotDir,
-                                                            "Images (*.jpg *.jpeg *.png *.bmp *.tif *.tiff)");
+                                                                    "Select one or several screenshots",
+                                                                    lastSelectedScreenshotDir,
+                                                                    "Images (*.jpg *.jpeg *.png *.bmp *.tif *.tiff)");
     emit sendScreenshotsSelected(screenshotsSelected);
 }
 
 
 void MainWindow::setProgressBarValue(quint32 value)
 {
-   ui->progressBar_status->setValue(value);
+    ui->progressBar_status->setValue(value);
 }
 
 
@@ -243,7 +248,7 @@ void MainWindow::deleteCopiedWidgetItem(QString path)
 {
     QFile file(path);
     QTreeWidgetItem *item = ui->treeWidget_screenshotList->findItems(QFileInfo(file).lastModified()
-                                                                    .toString("yyyy/MM/dd hh:mm:ss"), Qt::MatchExactly, 1)[0];
+                                                                     .toString("yyyy/MM/dd hh:mm:ss"), Qt::MatchExactly, 1)[0];
     delete item;
 }
 
@@ -251,7 +256,7 @@ void MainWindow::deleteCopiedWidgetItem(QString path)
 void MainWindow::disableAllControls()
 {
     setWidgetsDisabled(QStringList() << "pushButton_clearQueue" << "pushButton_addScreenshots" << "pushButton_copyScreenshots"
-                                     << "pushButton_locateSteamDir" << "comboBox_userID" << "comboBox_gameID" << "pushButton_prepare", true);
+                       << "pushButton_locateSteamDir" << "comboBox_userID" << "comboBox_gameID" << "pushButton_prepare", true);
 }
 
 
@@ -330,7 +335,7 @@ void MainWindow::on_pushButton_addScreenshots_clicked()
 
 
 void MainWindow::on_pushButton_clearQueue_clicked()
-{
+{  
     ui->treeWidget_screenshotList->clear();
 
     setWidgetsDisabled(QStringList() << "pushButton_clearQueue" << "pushButton_copyScreenshots", true);

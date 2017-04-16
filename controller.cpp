@@ -390,10 +390,11 @@ void Controller::addScreenshotsToPool(QStringList screenshotsSelected)
     while ( i.hasNext() ) {
 
         QString current = i.next();
+        QString extension = current.section('.', -1).toLower();
 
-        if ( screenshotPathsPool.contains(current) )
+        if ( screenshotPathsPool.contains(current) || !imageFormatsSupported.contains(extension) )
             screenshotsSelected.removeOne(current); // copies are removed from the list of selected screenshots about to add
-    }
+    }                                               // ...non-supported files are also removed
 
     if ( !screenshotsSelected.isEmpty() ) {
 
@@ -402,6 +403,15 @@ void Controller::addScreenshotsToPool(QStringList screenshotsSelected)
         screenshotPathsPool << screenshotsSelected;
         emit sendWidgetsDisabled( QStringList() << "pushButton_clearQueue" << "pushButton_copyScreenshots", false );
     }
+}
+
+
+void Controller::receiveTreeWidgetPointer(QTreeWidgetDragAndDrop *receivedWidget)
+{
+    treeWidget = receivedWidget;
+
+    QObject::connect(treeWidget,    &QTreeWidgetDragAndDrop::sendDroppedScreenshots,
+                     this,          &Controller::addScreenshotsToPool);
 }
 
 
@@ -443,6 +453,7 @@ void Controller::writeVDF()         // write to VDF from list of strings. previo
 
 void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *mainWindow)   // this routine copies screenshots to the respective folders
 {                                                                   // ...and manipulates a string list copy of the VDF (file is not written yet)
+    someScreenshotsWereNotPrepared = false;
     QRegularExpression desc(" <.+>$");
     selectedUserID = userID.replace("\\", "/").remove(desc);
     selectedGameID = gameID.remove(desc);   // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
@@ -577,18 +588,26 @@ void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *
 
                 QStringList current = i.next();
                 QImage image(current[0]);
-                quint32 width = QImage(image).size().width();
-                quint32 height = QImage(image).size().height();
 
-                QList<quint32> geometry = QList<quint32>() << width << height;
+                if (!image.isNull()) {                      // sometimes image files are messed up, e.g. JPG files saved with the PNG extension
 
-                if ( (width > steamMaxSideSize) || (height > steamMaxSideSize) || ((width * height) > steamMaxResolution) ) {
-                    QPixmap thumbnail = QPixmap::fromImage(image).scaled(320, 180, Qt::KeepAspectRatio);
-                    preparedScreenshotList << Screenshot({id, current, thumbnail, geometry, true, 0});
-                    thereAreLargeScreenshots = true;
+                    quint32 width = image.size().width();   // ...still they can be opened by some image viewers, but Qt doesn't tolerate such files and crahes the program
+                    quint32 height = image.size().height(); // ...hence such files should be discarded from the queue
+
+                    QList<quint32> geometry = QList<quint32>() << width << height;
+
+                    if ( (width > steamMaxSideSize) || (height > steamMaxSideSize) || ((width * height) > steamMaxResolution) ) {
+                        QPixmap thumbnail = QPixmap::fromImage(image).scaled(320, 180, Qt::KeepAspectRatio);
+                        preparedScreenshotList << Screenshot({id, current, thumbnail, geometry, true, 0});
+                        thereAreLargeScreenshots = true;
+                    }
+                    else {
+                        preparedScreenshotList << Screenshot({id, current, QPixmap(), geometry, false, 0});
+                    }
                 }
                 else {
-                    preparedScreenshotList << Screenshot({id, current, QPixmap(), geometry, false, 0});
+                    someScreenshotsWereNotPrepared = true;
+                    emit deleteCopiedWidgetItem(current[0]);
                 }
 
                 emit sendProgressBarValue(id + 1);
@@ -596,15 +615,24 @@ void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *
                 QCoreApplication::processEvents();
             }
 
-            emit sendLabelsVisible(QStringList() << "label_progress" << "label_status" << "progressBar_status", false);
+            if (!preparedScreenshotList.isEmpty()) {
 
-            if (thereAreLargeScreenshots) {
-                emit sendLabelsVisible(QStringList() << "label_progress" << "label_status", true);
-                emit sendStatusLabelText("waiting for user decision", "");
-                getUserDecisionAboutLargeScreenshots(preparedScreenshotList, mainWindow);
+                emit sendLabelsVisible(QStringList() << "label_progress" << "label_status" << "progressBar_status", false);
+
+                if (thereAreLargeScreenshots) {
+                    emit sendLabelsVisible(QStringList() << "label_progress" << "label_status", true);
+                    emit sendStatusLabelText("waiting for user decision", "");
+                    getUserDecisionAboutLargeScreenshots(preparedScreenshotList, mainWindow);
+                }
+                else
+                    pushScreenshots(preparedScreenshotList);
             }
-            else
-                pushScreenshots(preparedScreenshotList);
+            else {
+                sendLabelsVisible(QStringList() << "label_progress" << "progressBar_status", false);
+                sendLabelsVisible(QStringList() << "label_status", true);
+                emit sendStatusLabelText("none of screenshots were copied", "#ab4e52");
+                screenshotPathsPool.clear();
+            }
         }
     }
 }
@@ -785,8 +813,8 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
                     file.copy(copyDest + filename);                 // copy untouched JPEG file if it is really JPEG, is not large (or if user decided to try it upload anyway)
                 else                                                // ...only progressive JPEGs are copied as is, baseline or some unidentified jpegs are
                     image.save(copyDest + filename, "jpg", 95);     // ...getting processed and saved by Qt to prevent Steam Cloud to reject them
-                                                                    // ...see issue https://github.com/Foyl/SteaScree/issues/9
-                saveThumbnail(filename, image, width, height);
+
+                saveThumbnail(filename, image, width, height);      // ...see issue https://github.com/Foyl/SteaScree/issues/9
 
             } else                                                  // it is large and the user decision is "resize"
                 resizeAndSaveLargeScreenshot(current);
@@ -841,7 +869,12 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
     if (addedLines > 0) {
         emit sendLabelsText(QStringList() << "label_infoDirectories", QString::number(copiedDirsToNum));
         emit sendDirStatusLabelsVisible(true);
-        emit sendStatusLabelText("screenshots are ready for preparation", "grey");
+
+        if (someScreenshotsWereNotPrepared)
+            emit sendStatusLabelText("some screenshots were not copied", "#ab4e52");
+        else
+            emit sendStatusLabelText("screenshots are ready for preparation", "grey");
+
         emit sendWidgetsDisabled(QStringList() << "pushButton_prepare", false);
     }
 
