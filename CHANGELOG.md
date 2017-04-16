@@ -1,5 +1,8 @@
 # SteaScree Changelog
 
+## 1.4.1
+* Minor UI improvement.
+
 ## 1.4.0
 * Added Drag&Drop capability.
 * Fixed a bug when the app crashed if QImage object was not created if the image file is corrupted or have a wrong extension. Added a new status message if there were such files in the queue and some such files were not copied.
