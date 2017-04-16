@@ -29,6 +29,8 @@
 #include <QtMath>
 #include <QVersionNumber>
 
+#include <QDebug>
+
 
 Controller::Controller(QObject *parent) : QObject(parent)
 {    
@@ -74,29 +76,29 @@ void Controller::bootStrap()
 void Controller::readSettings()
 {
     settings->beginGroup("WindowGeometry");
-        QRect rec = QApplication::desktop()->availableGeometry();
-        QSize geometry = settings->value("Size", QSize(685, 450)).toSize();
-        QPoint moveToPoint = settings->value("Position", QPoint((rec.width()-685)/2, (rec.height()-450)/2)).toPoint();
-        emit moveWindow(geometry, moveToPoint);
-    settings->endGroup();    
+    QRect rec = QApplication::desktop()->availableGeometry();
+    QSize geometry = settings->value("Size", QSize(685, 450)).toSize();
+    QPoint moveToPoint = settings->value("Position", QPoint((rec.width()-685)/2, (rec.height()-450)/2)).toPoint();
+    emit moveWindow(geometry, moveToPoint);
+    settings->endGroup();
 
     settings->beginGroup("LastSelection");
-        steamDir = settings->value("SteamDir", defaultSteamDir).toString();
-        if ( QDir(steamDir).exists() )
-            emit sendLabelsText(QStringList() << "label_steamDirValue", convertSlashes(steamDir));
-        else
-            emit sendLabelsText(QStringList() << "label_steamDirValue", "Not found, please locate manually");
-        lastSelectedScreenshotDir = settings->value("Screenshots", QDir::currentPath()).toString();
-        lastSelectedUserID = settings->value("UserID").toString();
-        lastSelectedGameID = settings->value("GameID").toString();
+    steamDir = settings->value("SteamDir", defaultSteamDir).toString();
+    if ( QDir(steamDir).exists() )
+        emit sendLabelsText(QStringList() << "label_steamDirValue", convertSlashes(steamDir));
+    else
+        emit sendLabelsText(QStringList() << "label_steamDirValue", "Not found, please locate manually");
+    lastSelectedScreenshotDir = settings->value("Screenshots", QDir::currentPath()).toString();
+    lastSelectedUserID = settings->value("UserID").toString();
+    lastSelectedGameID = settings->value("GameID").toString();
     settings->endGroup();
 
     settings->beginGroup("Screenshots");
-        screenshotPathsPool = settings->value("Queue").toStringList();
+    screenshotPathsPool = settings->value("Queue").toStringList();
     settings->endGroup();
 
     settings->beginGroup("Update");
-        offerUpdateSetting = settings->value("Offer").toString();
+    offerUpdateSetting = settings->value("Offer").toString();
     settings->endGroup();
 }
 
@@ -104,21 +106,21 @@ void Controller::readSettings()
 void Controller::writeSettings(QSize size, QPoint pos, QString userID, QString gameID)
 {
     settings->beginGroup("WindowGeometry");
-        settings->setValue("Size", size);
-        settings->setValue("Position", pos);
+    settings->setValue("Size", size);
+    settings->setValue("Position", pos);
     settings->endGroup();
 
     settings->beginGroup("LastSelection");
-        settings->setValue("SteamDir", steamDir.replace("\\", "/"));
-        settings->setValue("Screenshots", lastSelectedScreenshotDir.replace("\\", "/"));
-        if ( !userID.isEmpty() )
-            settings->setValue("UserID", userID);
-        if ( !gameID.isEmpty() )
-            settings->setValue("GameID", gameID);
+    settings->setValue("SteamDir", steamDir.replace("\\", "/"));
+    settings->setValue("Screenshots", lastSelectedScreenshotDir.replace("\\", "/"));
+    if ( !userID.isEmpty() )
+        settings->setValue("UserID", userID);
+    if ( !gameID.isEmpty() )
+        settings->setValue("GameID", gameID);
     settings->endGroup();
 
     settings->beginGroup("Screenshots");
-       settings->setValue("Queue", screenshotPathsPool);
+    settings->setValue("Queue", screenshotPathsPool);
     settings->endGroup();
 }
 
@@ -142,6 +144,7 @@ void Controller::handleUpdate(QNetworkReply *reply)
 
         QString appVersion = QCoreApplication::applicationVersion();
         QString latestVersion = obj.value("version").toString();
+
         QVersionNumber appVersionNumber = QVersionNumber::fromString(appVersion);
         QVersionNumber latestVersionNumber = QVersionNumber::fromString(latestVersion);
 
@@ -156,7 +159,7 @@ void Controller::handleUpdate(QNetworkReply *reply)
 void Controller::writeSettingNeverOfferUpdate()
 {
     settings->beginGroup("Update");
-        settings->setValue("Offer", "Never");
+    settings->setValue("Offer", "Never");
     settings->endGroup();
 }
 
@@ -230,7 +233,7 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
             QObject::connect(nam, &QNetworkAccessManager::finished,
                              this, &Controller::getGameNames);
 
-            nam->get(QNetworkRequest(QUrl("http://api.steampowered.com/ISteamApps/GetAppList/v2")));                        
+            nam->get(QNetworkRequest(QUrl("http://api.steampowered.com/ISteamApps/GetAppList/v2")));
 
         } else
             emit sendLabelsOnMissingStuff(false, vdfFilename);
@@ -243,14 +246,19 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 QString Controller::getPersonalNameByUserID(QString userID)
 {
     QStringList configFiles;
-    QDirIterator i(userDataDir + "/" + userID, QStringList() << "config.cfg", QDir::Files, QDirIterator::Subdirectories);
-    while ( i.hasNext() ) {
-        configFiles << i.next();
+
+    {
+        QDirIterator i(userDataDir + "/" + userID, QStringList() << "config.cfg", QDir::Files, QDirIterator::Subdirectories);
+        while ( i.hasNext() ) {
+            configFiles << i.next();
+        }
     }
 
-    if (configFiles.length() == 1) { // proceed only if there is one config.cfg per user
+    QListIterator<QString> i(configFiles);
+    while ( i.hasNext() ) {
+        QString current = i.next();
 
-        QFile vdf(configFiles[0]);
+        QFile vdf(current);
         vdf.open(QIODevice::ReadOnly | QIODevice::Text);
         QTextStream text(&vdf);
         QStringList lines;
@@ -382,10 +390,11 @@ void Controller::addScreenshotsToPool(QStringList screenshotsSelected)
     while ( i.hasNext() ) {
 
         QString current = i.next();
+        QString extension = current.section('.', -1).toLower();
 
-        if ( screenshotPathsPool.contains(current) )
+        if ( screenshotPathsPool.contains(current) || !imageFormatsSupported.contains(extension) )
             screenshotsSelected.removeOne(current); // copies are removed from the list of selected screenshots about to add
-    }
+    }                                               // ...non-supported files are also removed
 
     if ( !screenshotsSelected.isEmpty() ) {
 
@@ -394,6 +403,15 @@ void Controller::addScreenshotsToPool(QStringList screenshotsSelected)
         screenshotPathsPool << screenshotsSelected;
         emit sendWidgetsDisabled( QStringList() << "pushButton_clearQueue" << "pushButton_copyScreenshots", false );
     }
+}
+
+
+void Controller::receiveTreeWidgetPointer(QTreeWidgetDragAndDrop *receivedWidget)
+{
+    treeWidget = receivedWidget;
+
+    QObject::connect(treeWidget,    &QTreeWidgetDragAndDrop::sendDroppedScreenshots,
+                     this,          &Controller::addScreenshotsToPool);
 }
 
 
@@ -435,6 +453,7 @@ void Controller::writeVDF()         // write to VDF from list of strings. previo
 
 void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *mainWindow)   // this routine copies screenshots to the respective folders
 {                                                                   // ...and manipulates a string list copy of the VDF (file is not written yet)
+    someScreenshotsWereNotPrepared = false;
     QRegularExpression desc(" <.+>$");
     selectedUserID = userID.replace("\\", "/").remove(desc);
     selectedGameID = gameID.remove(desc);   // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
@@ -569,18 +588,26 @@ void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *
 
                 QStringList current = i.next();
                 QImage image(current[0]);
-                quint32 width = QImage(image).size().width();
-                quint32 height = QImage(image).size().height();
 
-                QList<quint32> geometry = QList<quint32>() << width << height;
+                if (!image.isNull()) {                      // sometimes image files are messed up, e.g. JPG files saved with the PNG extension
 
-                if ( (width > steamMaxSideSize) || (height > steamMaxSideSize) || ((width * height) > steamMaxResolution) ) {
-                    QPixmap thumbnail = QPixmap::fromImage(image).scaled(320, 180, Qt::KeepAspectRatio);
-                    preparedScreenshotList << Screenshot({id, current, thumbnail, geometry, true, 0});
-                    thereAreLargeScreenshots = true;
+                    quint32 width = image.size().width();   // ...still they can be opened by some image viewers, but Qt doesn't tolerate such files and crahes the program
+                    quint32 height = image.size().height(); // ...hence such files should be discarded from the queue
+
+                    QList<quint32> geometry = QList<quint32>() << width << height;
+
+                    if ( (width > steamMaxSideSize) || (height > steamMaxSideSize) || ((width * height) > steamMaxResolution) ) {
+                        QPixmap thumbnail = QPixmap::fromImage(image).scaled(320, 180, Qt::KeepAspectRatio);
+                        preparedScreenshotList << Screenshot({id, current, thumbnail, geometry, true, 0});
+                        thereAreLargeScreenshots = true;
+                    }
+                    else {
+                        preparedScreenshotList << Screenshot({id, current, QPixmap(), geometry, false, 0});
+                    }
                 }
                 else {
-                    preparedScreenshotList << Screenshot({id, current, QPixmap(), geometry, false, 0});
+                    someScreenshotsWereNotPrepared = true;
+                    emit deleteCopiedWidgetItem(current[0]);
                 }
 
                 emit sendProgressBarValue(id + 1);
@@ -588,15 +615,24 @@ void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *
                 QCoreApplication::processEvents();
             }
 
-            emit sendLabelsVisible(QStringList() << "label_progress" << "label_status" << "progressBar_status", false);
+            if (!preparedScreenshotList.isEmpty()) {
 
-            if (thereAreLargeScreenshots) {
-                emit sendLabelsVisible(QStringList() << "label_progress" << "label_status", true);
-                emit sendStatusLabelText("waiting for user decision", "");
-                getUserDecisionAboutLargeScreenshots(preparedScreenshotList, mainWindow);
+                emit sendLabelsVisible(QStringList() << "label_progress" << "label_status" << "progressBar_status", false);
+
+                if (thereAreLargeScreenshots) {
+                    emit sendLabelsVisible(QStringList() << "label_progress" << "label_status", true);
+                    emit sendStatusLabelText("waiting for user decision", "");
+                    getUserDecisionAboutLargeScreenshots(preparedScreenshotList, mainWindow);
+                }
+                else
+                    pushScreenshots(preparedScreenshotList);
             }
-            else
-                pushScreenshots(preparedScreenshotList);
+            else {
+                sendLabelsVisible(QStringList() << "label_progress" << "progressBar_status", false);
+                sendLabelsVisible(QStringList() << "label_status", true);
+                emit sendStatusLabelText("none of screenshots were copied", "#ab4e52");
+                screenshotPathsPool.clear();
+            }
         }
     }
 }
@@ -663,8 +699,8 @@ void Controller::resizeAndSaveLargeScreenshot(Screenshot screenshot)
     quint32 height = screenshot.geometry[1];
 
     bool rectangular = true;
-    quint32 newWidth;
-    quint32 newHeight;
+    quint32 newWidth = 0;
+    quint32 newHeight = 0;
 
     if (width == height) {                                                      // square, large side
 
@@ -712,6 +748,35 @@ void Controller::saveThumbnail(QString filename, QImage image, quint32 width, qu
 }
 
 
+QString Controller::getEncodingProcessOfJpeg(QFile *file)    // implemented to mitigate the issue #9: https://github.com/Foyl/SteaScree/issues/9
+{                                                            // Qt is pretty lame at reading JPEG data, so I ended up reading up raw binary data
+    file->open(QIODevice::ReadOnly);
+    int bufferLength = 10000;                     // read just first 10 kilobytes from a given file, JPEG markers SOF0 or SOF2 should be there
+    QByteArray someBytes = file->read(bufferLength);
+    file->close();
+
+    if (someBytes.length() < bufferLength)
+        bufferLength = someBytes.length();
+
+    QString encodingProcess = "unidentified";
+
+    if ((someBytes[0] == ((char) 0xFF)) && (someBytes[1] == ((char) 0xD8))) // all proper JPEGs have 0xFF and 0xD8 bytes in the beginning
+        for (int i = 1; i < bufferLength - 1; i++)
+            if (someBytes[i] == (char) 0xFF) {
+                if (someBytes[i + 1] == (char) 0xC0) {
+                    encodingProcess = "baseline";
+                    break;
+                }
+                else if (someBytes[i + 1] == (char) 0xC2) {
+                    encodingProcess = "progressive";
+                    break;
+                }
+            }
+
+    return encodingProcess;
+}
+
+
 void Controller::pushScreenshots(QList<Screenshot> screenshotList)
 {
     emit sendProgressBarLength(screenshotList.length());
@@ -744,15 +809,15 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
 
             if (!current.isLarge || current.decision == 3) {
 
-                if ( (extension == "jpg") || (extension == "jpeg") )
-                    file.copy(copyDest + filename);                 // copy file if it is not large or if user decided to try it upload anyway
-                else
-                    image.save(copyDest + filename, "jpg", 95);
+                if ( ((extension == "jpg") || (extension == "jpeg")) && (getEncodingProcessOfJpeg(&file) == "progressive") )
+                    file.copy(copyDest + filename);                 // copy untouched JPEG file if it is really JPEG, is not large (or if user decided to try it upload anyway)
+                else                                                // ...only progressive JPEGs are copied as is, baseline or some unidentified jpegs are
+                    image.save(copyDest + filename, "jpg", 95);     // ...getting processed and saved by Qt to prevent Steam Cloud to reject them
 
-                saveThumbnail(filename, image, width, height);
+                saveThumbnail(filename, image, width, height);      // ...see issue https://github.com/Foyl/SteaScree/issues/9
 
             } else                                                  // it is large and the user decision is "resize"
-                resizeAndSaveLargeScreenshot(current);            
+                resizeAndSaveLargeScreenshot(current);
 
             emit sendLabelsText( QStringList() << "label_infoScreenshots", QString::number(++copiedScreenshotsNum) );
         }
@@ -804,7 +869,12 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
     if (addedLines > 0) {
         emit sendLabelsText(QStringList() << "label_infoDirectories", QString::number(copiedDirsToNum));
         emit sendDirStatusLabelsVisible(true);
-        emit sendStatusLabelText("screenshots are ready for preparation", "grey");
+
+        if (someScreenshotsWereNotPrepared)
+            emit sendStatusLabelText("some screenshots were not copied", "#ab4e52");
+        else
+            emit sendStatusLabelText("screenshots are ready for preparation", "grey");
+
         emit sendWidgetsDisabled(QStringList() << "pushButton_prepare", false);
     }
 
@@ -822,12 +892,6 @@ void Controller::getButtonList(QList<QPushButton*> buttonList)
 void Controller::removeEntryFromScreenshotPathsPool(QString entry)
 {
     screenshotPathsPool.removeOne(entry);
-}
-
-
-void Controller::setSelectedUserID(QString text)
-{
-    selectedUserID = text;
 }
 
 

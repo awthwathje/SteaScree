@@ -3,13 +3,13 @@
 
 #include "largefiledialog.h"
 #include "mainwindow.h"
-#include "screenshot.h"
 
 #include <QObject>
 #include <QSettings>
 #include <QTreeWidgetItem>
 #include <QNetworkReply>
 #include <QPushButton>
+#include <QFile>
 
 
 class Controller : public QObject
@@ -57,14 +57,18 @@ private:
     const quint32 steamMaxSideSize = 16000;
     const quint32 steamMaxResolution = 26210175;
     QString offerUpdateSetting;
+    QTreeWidgetDragAndDrop *treeWidget;
+    const QStringList imageFormatsSupported = QStringList() << "jpg" << "jpeg" << "png" << "bmp" << "tif" << "tiff";
+    bool someScreenshotsWereNotPrepared;
 
-    #if defined(Q_OS_WIN32)
-        const QString os = "Windows";
-    #elif defined(Q_OS_LINUX)
-        const QString os = "Linux";
-        #elif defined(Q_OS_OSX)
-        const QString os = "macOS";
-    #endif
+
+#if defined(Q_OS_WIN32)
+    const QString os = "Windows";
+#elif defined(Q_OS_LINUX)
+    const QString os = "Linux";
+#elif defined(Q_OS_OSX)
+    const QString os = "macOS";
+#endif
 
     void pushScreenshots(QList<Screenshot> screenshotList);
     void resizeAndSaveLargeScreenshot(Screenshot screenshot);
@@ -73,6 +77,7 @@ private:
     void checkForUpdates();
     QString getPersonalNameByUserID(QString userID);
     void getShortcutNames();
+    QString getEncodingProcessOfJpeg(QFile *file);
 
 
 signals:
@@ -116,11 +121,11 @@ public slots:
     void writeVDF();
     void returnLinesState();
     void clearCopyingStatusLabels();
-    void setSelectedUserID(QString text);
     void addScreenshotsToPool(QStringList screenshotsSelected);
     void prepareScreenshotListWithDecisions(QList<Screenshot> screenshotList);
     void writeSettingNeverOfferUpdate();
     void fillGameIDs(QString userIDCombined);
+    void receiveTreeWidgetPointer(QTreeWidgetDragAndDrop *receivedWidget);
 
 
 private slots:

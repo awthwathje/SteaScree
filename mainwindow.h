@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qtreewidgetdraganddrop.h"
+
 #include <QMainWindow>
 #include <QTreeWidgetItem>
 #include <QMessageBox>
@@ -38,6 +40,7 @@ private:
     void disableAllControls();
 
 
+
 signals:
     void sendButtonList(QList<QPushButton*> buttonList);
     void pushButton_addScreenshots_clicked();
@@ -52,10 +55,10 @@ signals:
     void writeVDF();
     void getVDFStatus();
     void sendSettings(QSize size, QPoint pos, QString userID, QString userIDComboBox);
-    void sendComboBoxUserIDCurrentText(QString text);
     void sendScreenshotsSelected(QStringList screenshotsSelected);
     void sendNeverOfferUpdate();
     void sendNewlySelectedUserID(QString userID);
+    void sendTreeWidgetPointer(QTreeWidgetDragAndDrop *treeWidget);
 
 
 public slots:

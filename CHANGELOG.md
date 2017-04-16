@@ -1,5 +1,21 @@
 # SteaScree Changelog
 
+## 1.4.1
+* Minor UI improvement.
+
+## 1.4.0
+* Added Drag&Drop capability.
+* Fixed a bug when the app crashed if QImage object was not created if the image file is corrupted or have a wrong extension. Added a new status message if there were such files in the queue and some such files were not copied.
+* Fixed misleading status message when userdata directory was not found.
+* Some additional minor fixes.
+
+## 1.3.3
+* Fixed a bug when personal names were not populated to the respective combobox, if there are multiple config.cfg files were found for a single user. This is completely normal, and now personal name ges extracted from the first found config. Typically, even if there are multiple configs, personal names in them are exactly the same.
+* Removed some unused methods.
+
+## 1.3.2
+* Implemented check for the encoding process of incoming JPEG files. If it is a progressive, not baseline, pristine copy of file is saved to the filesystem. Otherwise, the file is internally processed by Qt, just like PNG and other supported formats. Closes issue #9.
+
 ## 1.3.1
 * Well, seems like user switching never worked right. Now it does. Games listed in the combobox change on-the-fly when user ID get changed.
 

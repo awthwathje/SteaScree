@@ -1,14 +1,12 @@
-#include "mainwindow.h"
 #include "controller.h"
 #include "interfaceadjuster.h"
-#include "screenshot.h"
 
 #include <QApplication>
 
 Q_DECLARE_METATYPE(Screenshot)
 
 
-// TODO: grag'n'drop screenshots
+// TODO: design inconsitencies across platforms
 // TODO: UI in separate thread
 // TODO: multi-threading
 
@@ -116,9 +114,6 @@ int main(int argc, char *argv[])
     QObject::connect(&c, &Controller::sendLabelsOnMissingStuff,
                      &w, &MainWindow::setLabelsOnMissingStuff);
 
-    QObject::connect(&w, &MainWindow::sendComboBoxUserIDCurrentText,
-                     &c, &Controller::setSelectedUserID);
-
     QObject::connect(&c, &Controller::sendLabelsText,
                      &w, &MainWindow::setLabelsText);
 
@@ -137,9 +132,12 @@ int main(int argc, char *argv[])
     QObject::connect(&w, &MainWindow::sendNewlySelectedUserID,
                      &c, &Controller::fillGameIDs);
 
-    w.show();
+    QObject::connect(&w, &MainWindow::sendTreeWidgetPointer,
+                     &c, &Controller::receiveTreeWidgetPointer);
+
     w.bootStrap();
     c.bootStrap();
+    w.show();
 
     return a.exec();
 }
