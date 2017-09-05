@@ -17,15 +17,13 @@
 #include <QCheckBox>
 #include <QMovie>
 #include <QDesktopServices>
-
+#include <QShortcut>
 #include <QDebug>
 
 
 MainWindow::MainWindow(QWidget *parent) :
-
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-
 {
     ui->setupUi(this);
 }
@@ -39,7 +37,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::bootStrap()
 {
-    setLabelsVisible(QStringList() << "label_status" << "progressBar_status" << "label_progress", false);              // initial widget states setting
+    setLabelsVisible(QStringList() << "progressBar_status" << "label_progress", false);              // initial widget states setting
     setWidgetsDisabled(QStringList() << "pushButton_clearQueue" << "pushButton_copyScreenshots" << "pushButton_prepare", true);
     setDirStatusLabelsVisible(false);
 
@@ -52,7 +50,7 @@ void MainWindow::bootStrap()
     ui->progressBar_status->setSizePolicy(spRetain);
 
     emit sendButtonList(QList<QPushButton*>() << ui->pushButton_clearQueue << ui->pushButton_copyScreenshots    // buttons should have specific padding
-                        << ui->pushButton_addScreenshots << ui->pushButton_prepare);      // ...in each supported OS
+                        << ui->pushButton_addScreenshots << ui->pushButton_prepare);                            // ...in each OS
 
     userIDComboBox = ui->comboBox_userID;
     QObject::connect(userIDComboBox, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
@@ -77,7 +75,7 @@ void MainWindow::addWidgetItemToScreenshotList(QTreeWidgetItem *item)
 
 void MainWindow::resizeScreenshotListColumns()
 {
-    ui->treeWidget_screenshotList->resizeColumnToContents(0); // after all has been added, resize columns for a better appearance
+    ui->treeWidget_screenshotList->resizeColumnToContents(0); // when all is added, resize columns for a better appearance
     ui->treeWidget_screenshotList->resizeColumnToContents(1);
 }
 
@@ -194,6 +192,12 @@ void MainWindow::setProgressBarLength(quint32 length)
 }
 
 
+void MainWindow::setProgressBarValue(quint32 value)
+{
+    ui->progressBar_status->setValue(value);
+}
+
+
 void MainWindow::moveWindow(QSize geometry, QPoint moveToPoint)
 {
     resize(geometry);
@@ -219,9 +223,9 @@ void MainWindow::setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilena
 {
     ui->label_status->setVisible(true);
     if ( userDataMissing )
-        setStatusLabelText("Steam userdata directory is not found", "#ab4e52");
+        setStatusLabelText("Steam userdata directory is not found", warningColor);
     else
-        setStatusLabelText("Steam userdata directory is found, but " + vdfFilename + " is missing", "#ab4e52");
+        setStatusLabelText("Steam userdata directory is found, but " + vdfFilename + " is missing", warningColor);
 
     ui->label_steamDirValue->setText("not found");
     ui->label_steamDirValue->setStyleSheet("color: gray;");
@@ -235,12 +239,6 @@ void MainWindow::returnScreenshotsSelected(QString lastSelectedScreenshotDir)
                                                                     lastSelectedScreenshotDir,
                                                                     "Images (*.jpg *.jpeg *.png *.bmp *.tif *.tiff)");
     emit sendScreenshotsSelected(screenshotsSelected);
-}
-
-
-void MainWindow::setProgressBarValue(quint32 value)
-{
-    ui->progressBar_status->setValue(value);
 }
 
 
@@ -266,6 +264,12 @@ void MainWindow::setStatusLabelText(QString text, QString color)
     if ( color.isEmpty() )
         color = "black";
     ui->label_status->setStyleSheet("QLabel {color: " + color + "};");
+}
+
+
+void MainWindow::setJpegQualityValue(quint32 jpegQualityValue)
+{
+    ui->spinBox_jpegQuality->setValue(jpegQualityValue);
 }
 
 
@@ -298,6 +302,8 @@ void MainWindow::prepareScreenshots(quint32 addedLines)
 
             emit clearScreenshotPathsPool();
             emit clearState();
+
+            setStatusLabelText("ready", "");
 
             QMessageBox msgBox(this);
             msgBox.setIcon(QMessageBox::Information);
@@ -351,11 +357,12 @@ void MainWindow::on_pushButton_copyScreenshots_clicked()
 {
     QString selectedUserID = ui->comboBox_userID->currentText();
     QString selectedGameID = ui->comboBox_gameID->currentText();
+    quint32 jpegQuality = ui->spinBox_jpegQuality->value();
 
     QRegularExpression re("^[0-9]+( <.+>)?$");
 
     if ( !selectedGameID.contains(re) )
-        setStatusLabelText("invalid game ID, only numbers allowed", "#ab4e52");
+        setStatusLabelText("invalid game ID, only numbers allowed", warningColor);
     else {  // valid game ID
 
         disableAllControls();
@@ -365,7 +372,7 @@ void MainWindow::on_pushButton_copyScreenshots_clicked()
         setStatusLabelText("analyzing queued screenshots", "");
         ui->progressBar_status->setValue(0);
 
-        emit sendSelectedIDs(selectedUserID, selectedGameID, this);
+        emit sendSelectedIDs(selectedUserID, selectedGameID, jpegQuality, this);
     }
 }
 
@@ -373,7 +380,6 @@ void MainWindow::on_pushButton_copyScreenshots_clicked()
 void MainWindow::on_pushButton_prepare_clicked()
 {
     emit pushButton_prepare_clicked();
-    ui->label_status->clear();
 }
 
 
@@ -381,6 +387,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     emit sendSettings(size(), pos(),
                       ui->comboBox_userID->currentText().remove(QRegularExpression(" <.+>$")),
-                      ui->comboBox_gameID->currentText().remove(QRegularExpression(" <.+>$")));
+                      ui->comboBox_gameID->currentText().remove(QRegularExpression(" <.+>$")),
+                      ui->spinBox_jpegQuality->value());
     event->accept();
 }

@@ -10,7 +10,6 @@
 #include <QMovie>
 #include <QComboBox>
 
-
 namespace Ui {
 class MainWindow;
 }
@@ -35,10 +34,9 @@ private:
     Ui::MainWindow *ui;
     QMovie *gifLoader = new QMovie("://res/misc/loader.gif");
     QComboBox *userIDComboBox;
-
     void makeWideMessageBox(QMessageBox *msgBox, quint32 width);
     void disableAllControls();
-
+    const QString warningColor = "#ab4e52";
 
 
 signals:
@@ -47,14 +45,13 @@ signals:
     void pushButton_prepare_clicked();
     void clearScreenshotPathsPool();
     void clearState();
-    void getScreenshotPathsPoolLength();
-    void sendSelectedIDs(QString selectedUserID, QString selectedGameID, MainWindow *mainWindow);
+    void sendSelectedIDs(QString selectedUserID, QString selectedGameID, quint32 jpegQuality, MainWindow *mainWindow);
     void getSteamDir();
     void sendUserDataPaths(QString steamDir);
     void clearCopyingStatusLabels();
     void writeVDF();
     void getVDFStatus();
-    void sendSettings(QSize size, QPoint pos, QString userID, QString userIDComboBox);
+    void sendSettings(QSize size, QPoint pos, QString userID, QString userIDComboBox, quint32 jpegQuality);
     void sendScreenshotsSelected(QStringList screenshotsSelected);
     void sendNeverOfferUpdate();
     void sendNewlySelectedUserID(QString userID);
@@ -82,6 +79,7 @@ public slots:
     void setStatusLabelText(QString text, QString color);
     void setDirStatusLabelsVisible(bool visible);
     void offerUpdate(QString version, QString link);
+    void setJpegQualityValue(quint32 jpegQualityValue);
 
 
 private slots:
@@ -91,6 +89,7 @@ private slots:
     void on_pushButton_prepare_clicked();
     void on_pushButton_locateSteamDir_clicked();
     void reactToComboBoxActivation(QString userID);
+
 };
 
 #endif // MAINWINDOW_H

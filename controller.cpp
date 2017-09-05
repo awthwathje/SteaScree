@@ -31,6 +31,14 @@
 
 #include <QDebug>
 
+#include <QApplication>
+#include <QtGlobal>
+#include <QtDebug>
+#include <QTextStream>
+#include <QTextCodec>
+#include <QLocale>
+#include <QTime>
+
 
 Controller::Controller(QObject *parent) : QObject(parent)
 {    
@@ -84,13 +92,17 @@ void Controller::readSettings()
 
     settings->beginGroup("LastSelection");
     steamDir = settings->value("SteamDir", defaultSteamDir).toString();
-    if ( QDir(steamDir).exists() )
+    if (QDir(steamDir).exists())
         emit sendLabelsText(QStringList() << "label_steamDirValue", convertSlashes(steamDir));
     else
         emit sendLabelsText(QStringList() << "label_steamDirValue", "Not found, please locate manually");
     lastSelectedScreenshotDir = settings->value("Screenshots", QDir::currentPath()).toString();
     lastSelectedUserID = settings->value("UserID").toString();
     lastSelectedGameID = settings->value("GameID").toString();
+    quint32 jpegQuality = settings->value("JPEGQuality").toInt();
+    if (jpegQuality < 1 || jpegQuality > 100)
+        jpegQuality = defaultJpegQuality;
+    emit sendJpegQualityValue(jpegQuality);
     settings->endGroup();
 
     settings->beginGroup("Screenshots");
@@ -103,7 +115,7 @@ void Controller::readSettings()
 }
 
 
-void Controller::writeSettings(QSize size, QPoint pos, QString userID, QString gameID)
+void Controller::writeSettings(QSize size, QPoint pos, QString userID, QString gameID, quint32 jpegQuality)
 {
     settings->beginGroup("WindowGeometry");
     settings->setValue("Size", size);
@@ -117,6 +129,7 @@ void Controller::writeSettings(QSize size, QPoint pos, QString userID, QString g
         settings->setValue("UserID", userID);
     if ( !gameID.isEmpty() )
         settings->setValue("GameID", gameID);
+    settings->setValue("JPEGQuality", jpegQuality);
     settings->endGroup();
 
     settings->beginGroup("Screenshots");
@@ -136,7 +149,7 @@ void Controller::checkForUpdates()
 
 void Controller::handleUpdate(QNetworkReply *reply)
 {
-    if ( reply->error() == QNetworkReply::NoError ) {
+    if (reply->error() == QNetworkReply::NoError) {
 
         QByteArray raw = reply->readAll();
         QJsonDocument doc(QJsonDocument::fromJson(raw));
@@ -167,6 +180,7 @@ void Controller::writeSettingNeverOfferUpdate()
 void Controller::setUserDataPaths(QString dir)  // function to validate and set data paths and IDs
 {
     userDataDir = dir + "/userdata";
+
     QStringList userIDsCombined;
 
     vdfPaths.clear();                           // there may be multiple Steam installations in the system and thus multiple VDFs
@@ -191,7 +205,6 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 
             emit sendWidgetsDisabled(widgetList << "groupBox_screenshotQueue" << "treeWidget_screenshotList", false);
             emit sendLabelsText(QStringList() << "label_steamDirValue", convertSlashes(dir));
-            emit sendLabelsVisible(QStringList() << "label_status", false);
 
             steamDir = dir;
 
@@ -199,11 +212,17 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
             QListIterator<QString> i(vdfPaths);
             while ( i.hasNext() ) {
                 QString current = i.next();
+
                 QStringList splitted = current.split('/');
+
                 userID = splitted.takeAt(splitted.length() - 3);
+
                 someID = splitted.takeAt(splitted.length() - 2);
+
                 userIDsCombined << userID + "/" + someID;
+
                 QString personalName = getPersonalNameByUserID(userID);
+
                 userIDsCombinedWithNames << userID + "/" + someID + personalName;
             }
 
@@ -220,6 +239,7 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
                 items = userIDsCombinedWithNames.replaceInStrings("/", "\\");
                 userID = userID.replace("/", "\\");
             }
+
             selectedUserID = userID;
 
             emit sendToComboBox("comboBox_userID", items);
@@ -228,6 +248,9 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 
             emit sendToComboBox("comboBox_gameID", QStringList() << "loading...");
 
+            emit sendStatusLabelText("ready", "");
+            emit sendLabelsVisible(QStringList() << "label_status", true);
+
             QNetworkAccessManager *nam = new QNetworkAccessManager(this);
 
             QObject::connect(nam, &QNetworkAccessManager::finished,
@@ -235,11 +258,13 @@ void Controller::setUserDataPaths(QString dir)  // function to validate and set 
 
             nam->get(QNetworkRequest(QUrl("http://api.steampowered.com/ISteamApps/GetAppList/v2")));
 
-        } else
+        } else {
             emit sendLabelsOnMissingStuff(false, vdfFilename);
+        }
 
-    } else
+    } else {
         emit sendLabelsOnMissingStuff(true, vdfFilename);
+    }
 }
 
 
@@ -250,6 +275,7 @@ QString Controller::getPersonalNameByUserID(QString userID)
     {
         QDirIterator i(userDataDir + "/" + userID, QStringList() << "config.cfg", QDir::Files, QDirIterator::Subdirectories);
         while ( i.hasNext() ) {
+
             configFiles << i.next();
         }
     }
@@ -265,6 +291,7 @@ QString Controller::getPersonalNameByUserID(QString userID)
 
         while ( !text.atEnd() ) {
             QString line = text.readLine();
+
             lines << line;
         }
 
@@ -272,10 +299,13 @@ QString Controller::getPersonalNameByUserID(QString userID)
 
         QRegularExpression re("^name \"(?<name>.+)\"$");
         int pos = lines.indexOf(re);
+
         QRegularExpressionMatch matchNew;
 
-        if ( (lines[pos].contains(re, &matchNew)) )
+        if ( pos != -1 && (lines[pos].contains(re, &matchNew)) ) {
+
             return " <" + matchNew.captured("name") + ">";
+        }
     }
 
     return "";
@@ -451,12 +481,13 @@ void Controller::writeVDF()         // write to VDF from list of strings. previo
 }
 
 
-void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *mainWindow)   // this routine copies screenshots to the respective folders
+void Controller::prepareScreenshots(QString userID, QString gameID, quint32 jpegQuality, MainWindow *mainWindow)   // this routine copies screenshots to the respective folders
 {                                                                   // ...and manipulates a string list copy of the VDF (file is not written yet)
     someScreenshotsWereNotPrepared = false;
     QRegularExpression desc(" <.+>$");
     selectedUserID = userID.replace("\\", "/").remove(desc);
     selectedGameID = gameID.remove(desc);   // it's possible to enter game ID by hand or left what was auto-generated (with <...>)
+    selectedJpegQuality = jpegQuality;
 
     if ( lines.isEmpty() )
         lines = readVDF();
@@ -630,7 +661,7 @@ void Controller::prepareScreenshots(QString userID, QString gameID, MainWindow *
             else {
                 sendLabelsVisible(QStringList() << "label_progress" << "progressBar_status", false);
                 sendLabelsVisible(QStringList() << "label_status", true);
-                emit sendStatusLabelText("none of screenshots were copied", "#ab4e52");
+                emit sendStatusLabelText("none of screenshots were copied", warningColor);
                 screenshotPathsPool.clear();
             }
         }
@@ -734,7 +765,7 @@ void Controller::resizeAndSaveLargeScreenshot(Screenshot screenshot)
     saveThumbnail(filename, image, newWidth, newHeight);
 
     resizedImage = image.scaled(QSize(newWidth, newHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    resizedImage.save(copyDest + filename, "jpg", 95);
+    resizedImage.save(copyDest + filename, "jpg", selectedJpegQuality);
 }
 
 
@@ -812,7 +843,7 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
                 if ( ((extension == "jpg") || (extension == "jpeg")) && (getEncodingProcessOfJpeg(&file) == "progressive") )
                     file.copy(copyDest + filename);                 // copy untouched JPEG file if it is really JPEG, is not large (or if user decided to try it upload anyway)
                 else                                                // ...only progressive JPEGs are copied as is, baseline or some unidentified jpegs are
-                    image.save(copyDest + filename, "jpg", 95);     // ...getting processed and saved by Qt to prevent Steam Cloud to reject them
+                    image.save(copyDest + filename, "jpg", selectedJpegQuality);    // ...getting processed and saved by Qt to prevent Steam Cloud to reject them
 
                 saveThumbnail(filename, image, width, height);      // ...see issue https://github.com/Foyl/SteaScree/issues/9
 
@@ -871,9 +902,9 @@ void Controller::pushScreenshots(QList<Screenshot> screenshotList)
         emit sendDirStatusLabelsVisible(true);
 
         if (someScreenshotsWereNotPrepared)
-            emit sendStatusLabelText("some screenshots were not copied", "#ab4e52");
+            emit sendStatusLabelText("some screenshots were not copied", warningColor);
         else
-            emit sendStatusLabelText("screenshots are ready for preparation", "grey");
+            emit sendStatusLabelText("screenshots are ready for preparation", "");
 
         emit sendWidgetsDisabled(QStringList() << "pushButton_prepare", false);
     }
@@ -938,12 +969,6 @@ void Controller::clearCopyingStatusLabels()
 void Controller::returnLastSelectedScreenshotDir()
 {
     emit sendLastSelectedScreenshotDir(lastSelectedScreenshotDir);
-}
-
-
-void Controller::returnScreenshotPathPoolLength()
-{
-    emit sendProgressBarLength(screenshotPathsPool.length());
 }
 
 

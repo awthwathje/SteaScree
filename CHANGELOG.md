@@ -1,5 +1,17 @@
 # SteaScree Changelog
 
+## 1.5.4
+* Added "JPEG Quality" spinbox for situations, when SteaScree converts image to JPEG. It happens if the input image is too large for Steam Cloud or if it has non-JPEG format. Defaults to 95.
+* Slight redesign. Status field is now visible all the time.
+
+## 1.5.3
+* Now the app switches to debugging to file automatically, when the it is not ran in Qt Creator.
+
+## 1.5.2
+* Added a logic to save debug info to the debug.log file.
+* Fixed the bug when the app was crashing, if the Steam user personal name (nickname) was not found in config files. Closes issue #16.
+* Removed some unused methods.
+
 ## 1.4.1
 * Minor UI improvement.
 
