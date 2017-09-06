@@ -6,4 +6,4 @@ SteaScree is a simple cross-platform open-source utility app, which makes screen
 
 Latest installers for all platforms are always available at https://steascree.download.
 
-Official Steam group: http://steamcommunity.com/groups/steascree.
+Join official Steam group for the latest announcements and discussion: http://steamcommunity.com/groups/steascree.
