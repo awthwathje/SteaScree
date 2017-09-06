@@ -8,12 +8,12 @@
 #include <QTextCodec>
 #include <QLocale>
 #include <QTime>
+#include <QFile>
 
 Q_DECLARE_METATYPE(Screenshot)
 
-static QTextCodec *logCodec = NULL;
-static FILE *logStream = NULL;
-QString logFilePath = "debug.log";
+const QString logFilePath = "debug.log";
+bool logToFile = false;
 
 
 // TODO: design inconsitencies across platforms
@@ -21,46 +21,50 @@ QString logFilePath = "debug.log";
 // TODO: multi-threading
 
 
+QString getLogLevelName(QtMsgType type)
+{
+    QHash<QtMsgType, QString> msgLevelHash;
+    msgLevelHash[QtDebugMsg] = "Debug";
+    msgLevelHash[QtInfoMsg] = "Info";
+    msgLevelHash[QtWarningMsg] = "Warning";
+    msgLevelHash[QtCriticalMsg] = "Critical";
+    msgLevelHash[QtFatalMsg] = "Fatal";
+    return msgLevelHash[type];
+}
+
 void customMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QByteArray localMsg = msg.toLocal8Bit();
-    QString fileName(context.file);
-    QByteArray file = logCodec->fromUnicode(fileName);
+    QString txt;
     QTime time = QTime::currentTime();
-    QString formatedTime = time.toString("hh:mm:ss.zzz");
-    fprintf(logStream, "%s ", qPrintable(formatedTime));
+    QString formattedTime = time.toString("hh:mm:ss.zzz");
+    QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
+    QString logLevelName = getLogLevelName(type);
+    QByteArray logLevelMsg = logLevelName.toLocal8Bit();
+    QByteArray localMsg = msg.toLocal8Bit();
 
-    switch (type) {
-    case QtDebugMsg:
-        fprintf(logStream, "Debug: %s (`%s:%u, %s`)\n", localMsg.constData(), file.constData(), context.line, context.function);
-        break;
-    case QtWarningMsg:
-        fprintf(logStream, "Warning: %s (`%s:%u, %s`)\n", localMsg.constData(), file.constData(), context.line, context.function);
-        break;
-    case QtInfoMsg:
-        fprintf(logStream, "Info: %s (`%s:%u, %s`)\n", localMsg.constData(), file.constData(), context.line, context.function);
-        break;
-    case QtCriticalMsg:
-        fprintf(logStream, "Critical: %s (`%s:%u, %s`)\n", localMsg.constData(), file.constData(), context.line, context.function);
-        break;
-    case QtFatalMsg:
-        fprintf(logStream, "Fatal: %s (`%s:%u, %s`)\n", localMsg.constData(), file.constData(), context.line, context.function);
-        abort();
-        break;
+    if (logToFile) {
+        txt =  QString("%1 %2: %3 (%4)").arg(formattedTime, logLevelName, msg,  context.file);
+
+        QFile outFile(logFilePath);
+        outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+        QTextStream ts(&outFile);
+        ts << txt << endl;
+        outFile.close();
     }
-    fflush(logStream);
+
+    fprintf(stderr, "%s %s: %s (%s:%u, %s)\n", formattedTimeMsg.constData(), logLevelMsg.constData(), localMsg.constData(), context.file, context.line, context.function);
+
+    if (type == QtFatalMsg)
+        abort();
 }
 
 int main(int argc, char *argv[])
 {
-    QByteArray envVar = qgetenv("QTDIR");       //  check if the app is ran via QT Creator
+    QByteArray envVar = qgetenv("QTDIR");       //  check if the app is ran in Qt Creator
 
     if (envVar.isEmpty())
-        logStream = _wfopen(logFilePath.toStdWString().c_str(), L"a");  // log to file, append mode
-    else
-        logStream = stderr;                     // print all errors to console
+        logToFile = true;
 
-    logCodec = QTextCodec::codecForName("UTF-8");
     qInstallMessageHandler(customMessageOutput); // custom message handler for debugging
 
     QApplication a(argc, argv);

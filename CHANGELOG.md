@@ -1,6 +1,7 @@
 # SteaScree Changelog
 
 ## 1.5.4
+* Qt 5.9.1.
 * Added "JPEG Quality" spinbox for situations, when SteaScree converts image to JPEG. It happens if the input image is too large for Steam Cloud or if it has non-JPEG format. Defaults to 95.
 * Slight redesign. Status field is now visible all the time.
 
