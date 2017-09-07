@@ -30,12 +30,12 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
     msgLevelHash[QtCriticalMsg] = "Critical";
     msgLevelHash[QtFatalMsg] = "Fatal";
 
+    QByteArray localMsg = msg.toLocal8Bit();
     QTime time = QTime::currentTime();
     QString formattedTime = time.toString("hh:mm:ss.zzz");
     QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
     QString logLevelName = msgLevelHash[type];
     QByteArray logLevelMsg = logLevelName.toLocal8Bit();
-    QByteArray localMsg = msg.toLocal8Bit();
 
     if (logToFile) {
         QString txt =  QString("%1 %2: %3 (%4)").arg(formattedTime, logLevelName, msg,  context.file);
@@ -46,6 +46,7 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
         outFile.close();
     } else {
         fprintf(stderr, "%s %s: %s (%s:%u, %s)\n", formattedTimeMsg.constData(), logLevelMsg.constData(), localMsg.constData(), context.file, context.line, context.function);
+        fflush(stderr);
     }
 
     if (type == QtFatalMsg)
