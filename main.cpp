@@ -21,7 +21,7 @@ bool logToFile = false;
 // TODO: multi-threading
 
 
-QString getLogLevelName(QtMsgType type)
+void customMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QHash<QtMsgType, QString> msgLevelHash;
     msgLevelHash[QtDebugMsg] = "Debug";
@@ -29,30 +29,24 @@ QString getLogLevelName(QtMsgType type)
     msgLevelHash[QtWarningMsg] = "Warning";
     msgLevelHash[QtCriticalMsg] = "Critical";
     msgLevelHash[QtFatalMsg] = "Fatal";
-    return msgLevelHash[type];
-}
 
-void customMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    QString txt;
     QTime time = QTime::currentTime();
     QString formattedTime = time.toString("hh:mm:ss.zzz");
     QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
-    QString logLevelName = getLogLevelName(type);
+    QString logLevelName = msgLevelHash[type];
     QByteArray logLevelMsg = logLevelName.toLocal8Bit();
     QByteArray localMsg = msg.toLocal8Bit();
 
     if (logToFile) {
-        txt =  QString("%1 %2: %3 (%4)").arg(formattedTime, logLevelName, msg,  context.file);
-
+        QString txt =  QString("%1 %2: %3 (%4)").arg(formattedTime, logLevelName, msg,  context.file);
         QFile outFile(logFilePath);
         outFile.open(QIODevice::WriteOnly | QIODevice::Append);
         QTextStream ts(&outFile);
         ts << txt << endl;
         outFile.close();
+    } else {
+        fprintf(stderr, "%s %s: %s (%s:%u, %s)\n", formattedTimeMsg.constData(), logLevelMsg.constData(), localMsg.constData(), context.file, context.line, context.function);
     }
-
-    fprintf(stderr, "%s %s: %s (%s:%u, %s)\n", formattedTimeMsg.constData(), logLevelMsg.constData(), localMsg.constData(), context.file, context.line, context.function);
 
     if (type == QtFatalMsg)
         abort();
