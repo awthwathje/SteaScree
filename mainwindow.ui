@@ -37,7 +37,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
-     <layout class="QGridLayout" name="gridLayoutMain">
+     <layout class="QGridLayout" name="gridLayout_main">
       <property name="horizontalSpacing">
        <number>9</number>
       </property>
@@ -58,7 +58,7 @@
        </spacer>
       </item>
       <item row="11" column="2" colspan="3">
-       <layout class="QHBoxLayout" name="horizontalLayoutPrepare">
+       <layout class="QHBoxLayout" name="horizontalLayout_prepare">
         <item>
          <spacer name="horizontalSpacer_1">
           <property name="orientation">
@@ -126,8 +126,11 @@
         <layout class="QGridLayout" name="gridLayout_5">
          <item row="0" column="0">
           <layout class="QGridLayout" name="gridLayout">
-           <item row="1" column="0">
-            <layout class="QHBoxLayout" name="horizontalLayoutScreenshotListButtons">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetMinimumSize</enum>
+           </property>
+           <item row="2" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_screenshotListButtons">
              <item alignment="Qt::AlignLeft">
               <widget class="QPushButton" name="pushButton_clearQueue">
                <property name="sizePolicy">
@@ -270,13 +273,20 @@
              </column>
             </widget>
            </item>
+           <item row="1" column="0">
+            <layout class="QGridLayout" name="gridLayout_2">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetMinimumSize</enum>
+             </property>
+            </layout>
+           </item>
           </layout>
          </item>
         </layout>
        </widget>
       </item>
       <item row="9" column="2" colspan="3">
-       <layout class="QHBoxLayout" name="horizontalLayoutInfo">
+       <layout class="QHBoxLayout" name="horizontalLayout_info">
         <item>
          <spacer name="horizontalSpacer_5">
           <property name="orientation">
@@ -389,106 +399,17 @@
         </item>
        </layout>
       </item>
-      <item row="0" column="4" rowspan="2">
-       <widget class="QGroupBox" name="groupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>130</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="title">
-         <string/>
-        </property>
-        <widget class="QWidget" name="gridLayoutWidget">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>139</width>
-           <height>161</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <property name="leftMargin">
-           <number>7</number>
-          </property>
-          <property name="topMargin">
-           <number>13</number>
-          </property>
-          <property name="rightMargin">
-           <number>12</number>
-          </property>
-          <item row="2" column="0" rowspan="2">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QLabel" name="label_2">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>JPEG quality:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="spinBox_jpegQuality">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>100</number>
-              </property>
-              <property name="value">
-               <number>95</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
       <item row="0" column="2" rowspan="2" colspan="2">
-       <widget class="QGroupBox" name="groupBox_directories">
+       <widget class="QGroupBox" name="groupBox_main">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>475</width>
+          <width>0</width>
           <height>0</height>
          </size>
         </property>
@@ -497,7 +418,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <layout class="QGridLayout" name="gridLayoutDirectories">
+          <layout class="QGridLayout" name="gridLayout_directories">
            <property name="sizeConstraint">
             <enum>QLayout::SetMinimumSize</enum>
            </property>
@@ -838,6 +759,84 @@
           </layout>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item row="0" column="4" rowspan="2">
+       <widget class="QGroupBox" name="groupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>175</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+        </property>
+        <widget class="QWidget" name="">
+         <property name="geometry">
+          <rect>
+           <x>7</x>
+           <y>32</y>
+           <width>161</width>
+           <height>28</height>
+          </rect>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMinimumSize</enum>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>JPEG quality:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_jpegQuality">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>95</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
