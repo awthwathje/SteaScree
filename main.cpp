@@ -23,13 +23,7 @@ bool logToFile = false;
 
 void customMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QHash<QtMsgType, QString> msgLevelHash;
-    msgLevelHash[QtDebugMsg] = "Debug";
-    msgLevelHash[QtInfoMsg] = "Info";
-    msgLevelHash[QtWarningMsg] = "Warning";
-    msgLevelHash[QtCriticalMsg] = "Critical";
-    msgLevelHash[QtFatalMsg] = "Fatal";
-
+    QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}});
     QByteArray localMsg = msg.toLocal8Bit();
     QTime time = QTime::currentTime();
     QString formattedTime = time.toString("hh:mm:ss.zzz");
