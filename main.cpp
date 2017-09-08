@@ -2,8 +2,18 @@
 #include "interfaceadjuster.h"
 
 #include <QApplication>
+#include <QtGlobal>
+#include <QtDebug>
+#include <QTextStream>
+#include <QTextCodec>
+#include <QLocale>
+#include <QTime>
+#include <QFile>
 
 Q_DECLARE_METATYPE(Screenshot)
+
+const QString logFilePath = "debug.log";
+bool logToFile = false;
 
 
 // TODO: design inconsitencies across platforms
@@ -11,8 +21,41 @@ Q_DECLARE_METATYPE(Screenshot)
 // TODO: multi-threading
 
 
+void customMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}});
+    QByteArray localMsg = msg.toLocal8Bit();
+    QTime time = QTime::currentTime();
+    QString formattedTime = time.toString("hh:mm:ss.zzz");
+    QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
+    QString logLevelName = msgLevelHash[type];
+    QByteArray logLevelMsg = logLevelName.toLocal8Bit();
+
+    if (logToFile) {
+        QString txt =  QString("%1 %2: %3 (%4)").arg(formattedTime, logLevelName, msg,  context.file);
+        QFile outFile(logFilePath);
+        outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+        QTextStream ts(&outFile);
+        ts << txt << endl;
+        outFile.close();
+    } else {
+        fprintf(stderr, "%s %s: %s (%s:%u, %s)\n", formattedTimeMsg.constData(), logLevelMsg.constData(), localMsg.constData(), context.file, context.line, context.function);
+        fflush(stderr);
+    }
+
+    if (type == QtFatalMsg)
+        abort();
+}
+
 int main(int argc, char *argv[])
 {
+    QByteArray envVar = qgetenv("QTDIR");       //  check if the app is ran in Qt Creator
+
+    if (envVar.isEmpty())
+        logToFile = true;
+
+    qInstallMessageHandler(customMessageOutput); // custom message handler for debugging
+
     QApplication a(argc, argv);
 
     QCoreApplication::setOrganizationName("Foyl");
@@ -81,9 +124,6 @@ int main(int argc, char *argv[])
     QObject::connect(&w, &MainWindow::clearCopyingStatusLabels,
                      &c, &Controller::clearCopyingStatusLabels);
 
-    QObject::connect(&w, &MainWindow::getScreenshotPathsPoolLength,
-                     &c, &Controller::returnScreenshotPathPoolLength);
-
     QObject::connect(&c, &Controller::sendProgressBarLength,
                      &w, &MainWindow::setProgressBarLength);
 
@@ -134,6 +174,9 @@ int main(int argc, char *argv[])
 
     QObject::connect(&w, &MainWindow::sendTreeWidgetPointer,
                      &c, &Controller::receiveTreeWidgetPointer);
+
+    QObject::connect(&c, &Controller::sendJpegQualityValue,
+                     &w, &MainWindow::setJpegQualityValue);
 
     w.bootStrap();
     c.bootStrap();

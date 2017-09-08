@@ -44,6 +44,7 @@ private:
     QString lastSelectedScreenshotDir;
     QString lastSelectedUserID;
     QString lastSelectedGameID;
+    quint32 selectedJpegQuality;
     QStringList copiedGames;
     QString copyDest;
     qint32 opening;
@@ -60,6 +61,16 @@ private:
     QTreeWidgetDragAndDrop *treeWidget;
     const QStringList imageFormatsSupported = QStringList() << "jpg" << "jpeg" << "png" << "bmp" << "tif" << "tiff";
     bool someScreenshotsWereNotPrepared;
+    void pushScreenshots(QList<Screenshot> screenshotList);
+    void resizeAndSaveLargeScreenshot(Screenshot screenshot);
+    void getUserDecisionAboutLargeScreenshots(QList<Screenshot> screenshotList, MainWindow *mainWindow);
+    void saveThumbnail(QString filename, QImage image, quint32 width, quint32 height);
+    void checkForUpdates();
+    QString getPersonalNameByUserID(QString userID);
+    void getShortcutNames();
+    QString getEncodingProcessOfJpeg(QFile *file);
+    const QString warningColor = "#ab4e52";
+    const quint32 defaultJpegQuality = 95;
 
 
 #if defined(Q_OS_WIN32)
@@ -69,15 +80,6 @@ private:
 #elif defined(Q_OS_OSX)
     const QString os = "macOS";
 #endif
-
-    void pushScreenshots(QList<Screenshot> screenshotList);
-    void resizeAndSaveLargeScreenshot(Screenshot screenshot);
-    void getUserDecisionAboutLargeScreenshots(QList<Screenshot> screenshotList, MainWindow *mainWindow);
-    void saveThumbnail(QString filename, QImage image, quint32 width, quint32 height);
-    void checkForUpdates();
-    QString getPersonalNameByUserID(QString userID);
-    void getShortcutNames();
-    QString getEncodingProcessOfJpeg(QFile *file);
 
 
 signals:
@@ -105,17 +107,17 @@ signals:
     void setupStatusArea(quint32 progressBarMaximum);
     void sendDirStatusLabelsVisible(bool visible);
     void sendUpdateInfo(QString version, QString link);
+    void sendJpegQualityValue(quint32 jpegQualityValue);
 
 
 public slots:
     void getButtonList(QList<QPushButton *> buttonList);
-    void writeSettings(QSize size, QPoint pos, QString userID, QString gameID);
+    void writeSettings(QSize size, QPoint pos, QString userID, QString gameID, quint32 jpegQuality);
     void removeEntryFromScreenshotPathsPool(QString entry);
     void returnLastSelectedScreenshotDir();
     void clearScreenshotPathsPool();
     void clearState();
-    void returnScreenshotPathPoolLength();
-    void prepareScreenshots(QString userID, QString gameID, MainWindow *mainWindow);
+    void prepareScreenshots(QString userID, QString gameID, quint32 jpegQuality, MainWindow *mainWindow);
     void setUserDataPaths(QString dir);
     void returnSteamDir();
     void writeVDF();
