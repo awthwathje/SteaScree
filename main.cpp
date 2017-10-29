@@ -9,11 +9,11 @@
 #include <QLocale>
 #include <QTime>
 #include <QFile>
+#include <QDir>
 
 Q_DECLARE_METATYPE(Screenshot)
 
-const QString logFilePath = "debug.log";
-bool logToFile = false;
+QString logFilePath = "";
 
 
 // TODO: design inconsitencies across platforms
@@ -31,7 +31,7 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
     QString logLevelName = msgLevelHash[type];
     QByteArray logLevelMsg = logLevelName.toLocal8Bit();
 
-    if (logToFile) {
+    if (logFilePath != "") {
         QString txt =  QString("%1 %2: %3 (%4)").arg(formattedTime, logLevelName, msg,  context.file);
         QFile outFile(logFilePath);
         outFile.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -49,14 +49,14 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
 
 int main(int argc, char *argv[])
 {
-    QByteArray envVar = qgetenv("QTDIR");       //  check if the app is ran in Qt Creator
+    QApplication a(argc, argv);
+
+    QByteArray envVar = qgetenv("QTDIR");                       //  check if the app is ran in Qt Creator
 
     if (envVar.isEmpty())
-        logToFile = true;
+        logFilePath = a.applicationDirPath() + "/debug.log";    // log to application directory
 
-    qInstallMessageHandler(customMessageOutput); // custom message handler for debugging
-
-    QApplication a(argc, argv);
+    qInstallMessageHandler(customMessageOutput);                // install custom message handler for debugging
 
     QCoreApplication::setOrganizationName("Foyl");
     QCoreApplication::setOrganizationDomain("foyl.io");
