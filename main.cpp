@@ -9,7 +9,7 @@
 #include <QLocale>
 #include <QTime>
 #include <QFile>
-#include <QDir>
+#include <QFileInfo>
 
 Q_DECLARE_METATYPE(Screenshot)
 
@@ -53,8 +53,12 @@ int main(int argc, char *argv[])
 
     QByteArray envVar = qgetenv("QTDIR");                       //  check if the app is ran in Qt Creator
 
-    if (envVar.isEmpty())
-        logFilePath = a.applicationDirPath() + "/debug.log";    // log to application directory
+    if (envVar.isEmpty()) {
+        QFileInfo appDir(a.applicationDirPath());
+        if (appDir.isWritable()) {
+            logFilePath = a.applicationDirPath() + "/debug.log";    // log to application directory
+        }
+    }
 
     qInstallMessageHandler(customMessageOutput);                // install custom message handler for debugging
 
