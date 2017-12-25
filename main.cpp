@@ -16,6 +16,7 @@ Q_DECLARE_METATYPE(Screenshot)
 QString logFilePath = "";
 
 
+// TODO: make it possible to revert screenshots.vdf to the pre-SteaScree state
 // TODO: design inconsitencies across platforms
 // TODO: UI in separate thread
 // TODO: multi-threading
