@@ -15,13 +15,6 @@ Q_DECLARE_METATYPE(Screenshot)
 
 QString logFilePath = "";
 
-
-// TODO: make it possible to revert screenshots.vdf to the pre-SteaScree state
-// TODO: design inconsitencies across platforms
-// TODO: UI in separate thread
-// TODO: multi-threading
-
-
 void customMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}});
