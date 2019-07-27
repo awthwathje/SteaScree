@@ -1,0 +1,6 @@
+- Make it possible to revert screenshots.vdf to the pre-SteaScree state.
+- [TECH] Investigate high-volume tasks (>150 screenshots).
+- Check if screenshots are already in the correct folder and don't copy, but rename them instead.
+- Fix design inconsitencies across platforms.
+- [TECH] UI in a separate thread.
+- [TECH] Multi-threading.
