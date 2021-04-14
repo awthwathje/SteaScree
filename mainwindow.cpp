@@ -223,9 +223,9 @@ void MainWindow::setLabelsOnMissingStuff(bool userDataMissing, QString vdfFilena
 {
     ui->label_status->setVisible(true);
     if ( userDataMissing )
-        setStatusLabelText("Steam userdata directory is not found", warningColor);
+        setStatusLabelText("Steam \"userdata\" directory is not found", warningColor);
     else
-        setStatusLabelText("Steam userdata directory is found, but " + vdfFilename + " is missing", warningColor);
+        setStatusLabelText("Steam \"userdata\" directory is found, but " + vdfFilename + " is missing", warningColor);
 
     ui->label_steamDirValue->setText("not found");
     ui->label_steamDirValue->setStyleSheet("color: gray;");
