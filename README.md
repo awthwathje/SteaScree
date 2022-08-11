@@ -1,4 +1,6 @@
-# SteaScree: Steam Cloud Screenshot Uploader
+# This is no longer maintained. Who knows maybe I'll motivate myself enough and build the web-based SteaScree 2 at some point!
+
+## SteaScree: Steam Cloud Screenshot Uploader
 
 SteaScree is a simple cross-platform open-source utility app, which makes screenshots, taken without the use of Steam's in-game overlay, uploadable to the Steam Cloud. You just pick pics, a game and SteaScree will do the rest.
 
